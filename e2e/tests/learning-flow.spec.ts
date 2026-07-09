@@ -14,9 +14,9 @@ test.describe("学習フロー一気通貫(SPEC K §3-2)", () => {
     // 1. 開発ログイン(302 + Set-Cookie)
     await devLogin(page);
 
-    // 2. コース一覧 → HTML入門
+    // 2. コース一覧 → HTML入門(カードのリンク名は「はじめる/つづける」のため testid で特定)
     await page.goto("/courses");
-    await page.getByRole("link", { name: UI_TEXT.htmlCourseTitle }).first().click();
+    await page.getByTestId(`course-card-${COURSE_SLUG}`).getByRole("link").first().click();
     await page.waitForURL(`**/courses/${COURSE_SLUG}`);
 
     // 3. レッスン一覧 → レッスン1(F 実装: クリックで slides/1 へ)
@@ -26,16 +26,16 @@ test.describe("学習フロー一気通貫(SPEC K §3-2)", () => {
       .click();
     await page.waitForURL(new RegExp(`/courses/${COURSE_SLUG}/${LESSON_SLUG}/slides/1$`));
 
-    // 4. →キーでスライドを最後まで送る(§10.5 キーボード操作)
-    for (let i = 0; i < 20; i++) {
-      const beforeUrl = page.url();
+    // 4. →キーでスライドを最後まで送る(§10.5 キーボード操作)。
+    // ハイドレーション完了前の keydown は無反応のため、「演習リンクが出るまで押す」リトライ方式にする
+    const exerciseLink = page.getByRole("link", { name: UI_TEXT.exerciseLink }).first();
+    for (let i = 0; i < 25 && !(await exerciseLink.isVisible().catch(() => false)); i++) {
       await page.keyboard.press("ArrowRight");
-      await page.waitForURL((url) => url.toString() !== beforeUrl, { timeout: 3_000 }).catch(() => undefined);
-      if (page.url() === beforeUrl) break; // 最終スライドに到達(URL が進まなくなった)
+      await page.waitForTimeout(400);
     }
 
     // 5. 最終スライドの導線から演習へ
-    await page.getByRole("link", { name: UI_TEXT.exerciseLink }).first().click();
+    await exerciseLink.click();
     await page.waitForURL(new RegExp(`/courses/${COURSE_SLUG}/${LESSON_SLUG}/exercise$`));
 
     // 6. CodeMirror に solution を入力(全選択 → insertText。SPEC K の fallback 方式)
