@@ -6,6 +6,7 @@ export default defineCourse({
   title: "CSS入門",
   description:
     "ページに色・形・レイアウトを与えるCSS。セレクタの書き方からボックスモデル、Flexboxまで、飾りながら学びます。",
+  order: 2,
   lessons: [
     "css-01-color",
     "css-02-text",

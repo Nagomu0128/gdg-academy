@@ -213,6 +213,7 @@ export const courseSchema = z
     slug: z.string().regex(slugPattern),
     title: z.string().min(1),
     description: z.string().min(1),
+    order: z.number().int().positive().optional(),
     lessons: z.array(z.string().regex(slugPattern)).min(1),
   })
   .superRefine((course, ctx) => {

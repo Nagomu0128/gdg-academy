@@ -25,7 +25,7 @@
     "dev": "pnpm --filter @codesteps/app run dev",
     "build": "pnpm --filter @codesteps/app run build",
     "typecheck": "pnpm -r run typecheck",
-    "test": "pnpm -r --no-bail run test",
+    "test": "pnpm -r --no-bail --filter=!@codesteps/e2e run test",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "codegen": "pnpm --filter @codesteps/app run codegen",

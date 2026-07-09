@@ -223,6 +223,13 @@ export async function discoverContent(contentRoot: string): Promise<DiscoveryRes
     courses.push({ def: courseDef, courseDir, lessons: ordered });
   }
 
+  // 表示順: course.order 昇順(未指定は末尾)、同順位は slug 順。content-meta.json の courses 配列順の正
+  courses.sort(
+    (a, b) =>
+      (a.def.order ?? Number.MAX_SAFE_INTEGER) - (b.def.order ?? Number.MAX_SAFE_INTEGER) ||
+      a.def.slug.localeCompare(b.def.slug),
+  );
+
   return { courses, errors };
 }
 

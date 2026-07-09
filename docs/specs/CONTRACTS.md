@@ -284,7 +284,7 @@ export const ACHIEVEMENTS: { id: string; title: string; description: string; ico
 | `_index.tsx` (F) | `{ user, courses: CourseOverview[] }` | — |
 | `courses._index.tsx` (F) | `{ user, courses: CourseOverview[] }` | — |
 | `courses.$course.tsx` (F) | `{ user, course: CourseDetail }`(404 対応) | — |
-| `courses.$course.$lesson.slides.$n.tsx` (D) | `{ courseSlug, lessonSlug, lessonTitle, n, slideCount, prevLessonSlug?, isLastSlide }` | — |
+| `courses.$course.$lesson.slides.$n.tsx` (D) | `{ courseSlug, courseTitle, lessonSlug, lessonTitle, n, slideCount, prevLessonSlug?, isLastSlide }` | — |
 | `courses.$course.$lesson.exercise.tsx` (E) | `{ user, courseSlug, lessonSlug, exercise: ExerciseState }`(requireUser) | §6.1 |
 | `me.tsx` (F) | `MypageData + { user }`(requireUser) | — |
 | `api.auth.$.tsx` (C) | BA handler | BA handler |
