@@ -3,6 +3,7 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { lintCss, lintHtml } from "@codesteps/lesson-kit/markup-lint";
 import { courseSchema, lessonSchema } from "@codesteps/lesson-kit/schemas";
 import type { ZodError, z } from "zod";
 
@@ -166,6 +167,26 @@ export async function discoverContent(contentRoot: string): Promise<DiscoveryRes
       }
       // codegen は checks の中身(run 関数)を必要としない(判定バンドルは lesson.ts を直接 import する)
       const def = parsedLesson.data;
+
+      // 構造リント(ADR #18): initial / solution が提出時ガードに引っかからないことを著者側で保証する。
+      // initial は「未完成」でよいが「構造が壊れている」状態(タグの > 抜け等)は教材バグとして拒否する
+      const lintTargets: [string, Record<string, string>][] = [
+        ["initial", Object.fromEntries(Object.entries(def.files).map(([n, f]) => [n, f.initial]))],
+        ["solution", def.solution],
+      ];
+      for (const [variant, fileMap] of lintTargets) {
+        for (const [fileName, source] of Object.entries(fileMap)) {
+          const lower = fileName.toLowerCase();
+          const diags = lower.endsWith(".html")
+            ? lintHtml(source)
+            : lower.endsWith(".css")
+              ? lintCss(source)
+              : [];
+          for (const diag of diags) {
+            errors.push(`${lessonLabel} [${def.slug}]: ${variant} の ${fileName}: ${diag.message}`);
+          }
+        }
+      }
 
       const dup = globalLessonSlugs.get(def.slug);
       if (dup !== undefined) {

@@ -9,6 +9,7 @@ import { bracketMatching, defaultHighlightStyle, indentUnit, syntaxHighlighting 
 import { EditorState, type Extension, Prec } from "@codemirror/state";
 import { EditorView, highlightActiveLine, keymap, lineNumbers } from "@codemirror/view";
 import { useEffect, useRef } from "react";
+import { markupLintExtension } from "./markup-extension";
 import { zenkakuExtension } from "./zenkaku-extension";
 
 function languageFor(fileName: string): Extension {
@@ -62,6 +63,7 @@ export function CodeEditor(props: {
         EditorState.tabSize.of(2),
         languageFor(fileName),
         zenkakuExtension(),
+        markupLintExtension(fileName),
         Prec.highest(
           keymap.of([
             {

@@ -15,6 +15,7 @@ import {
   deepEqualWithNaN,
   defaultMessageFor,
   diagnoseMarkupZenkaku,
+  suggestCssProperty,
   textMatches,
 } from "@codesteps/lesson-kit";
 import { JUDGE_RESULT_KIND } from "../protocol";
@@ -163,6 +164,28 @@ function zenkakuSwappedMessage(check: Check, files: FileMap): string | null {
   return null;
 }
 
+/**
+ * style check 失敗時のみ: 期待プロパティのタイポ(編集距離 <= 2)が CSS 内に書かれていたら指摘する。
+ * 提案が失敗した check の property と一致するときだけ発火するため偽陽性がない(症状駆動 — §5.4)。
+ */
+function cssTypoSwappedMessage(check: Check, files: FileMap): string | null {
+  if (check.type !== "style") return null;
+  const cssSources = Object.keys(files)
+    .filter((n) => n.toLowerCase().endsWith(".css"))
+    .map((n) => files[n] ?? "");
+  for (const source of cssSources) {
+    for (const m of source.matchAll(/(?<![\w-])([a-zA-Z][a-zA-Z-]{1,30})\s*:/g)) {
+      const written = (m[1] ?? "").toLowerCase();
+      if (written === check.property) continue;
+      if (suggestCssProperty(written) === check.property) {
+        const line = source.slice(0, m.index ?? 0).split("\n").length;
+        return `${line}行目の「${written}」は「${check.property}」の書き間違いかもしれません`;
+      }
+    }
+  }
+  return null;
+}
+
 /** 全 check を上から評価(失敗後も全件継続 — §5.1)。表示は最初の失敗 1 件 */
 async function runChecks(def: LessonDef, cfg: JudgeConfig): Promise<Verdict> {
   const details: { checkId: string; passed: boolean }[] = [];
@@ -176,7 +199,11 @@ async function runChecks(def: LessonDef, cfg: JudgeConfig): Promise<Verdict> {
     }
     details.push({ checkId: check.id, passed });
     if (!passed && display === null) {
-      const message = zenkakuSwappedMessage(check, cfg.files) ?? check.message ?? defaultMessageFor(check);
+      const message =
+        zenkakuSwappedMessage(check, cfg.files) ??
+        cssTypoSwappedMessage(check, cfg.files) ??
+        check.message ??
+        defaultMessageFor(check);
       display = { checkId: check.id, message };
     }
   }

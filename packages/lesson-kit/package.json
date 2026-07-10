@@ -6,7 +6,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./schemas": "./src/schemas.ts"
+    "./schemas": "./src/schemas.ts",
+    "./markup-lint": "./src/markup-lint.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
