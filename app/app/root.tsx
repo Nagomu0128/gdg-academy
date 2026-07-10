@@ -59,7 +59,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 className="flex items-center gap-2.5 rounded focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
               >
                 <img src="/gdg.svg" alt="" className="h-7 w-7" />
-                <span className="font-bold text-lg text-slate-900 tracking-tight">{SITE_NAME}</span>
+                <span className="font-medium text-lg text-slate-900">{SITE_NAME}</span>
               </Link>
               {/* コース閲覧はログイン必須(ADR #17)のため、ナビはログイン後のみ。マイページはユーザーメニュー内 */}
               {user ? (
