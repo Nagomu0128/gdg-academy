@@ -7,6 +7,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useMatches,
   useRouteLoaderData,
 } from "react-router";
 import { getOptionalUser } from "~/features/auth/auth.server";
@@ -25,61 +26,73 @@ export function Layout({ children }: { children: ReactNode }) {
   // ErrorBoundary 描画時は loader データが無いことがある
   const data = useRouteLoaderData<typeof loader>("root");
   const user = data?.user ?? null;
+  // 学習画面(スライド・演習)はフッターを出さない(route の handle で宣言)
+  const hideFooter = useMatches().some(
+    (m) => (m.handle as { hideFooter?: boolean } | undefined)?.hideFooter === true,
+  );
 
   return (
     <html lang="ja">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <title>{SITE_NAME}</title>
         <Meta />
         <Links />
       </head>
       <body className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
         <header className="border-slate-200 border-b bg-white">
+          {/* Google 4色のアクセントバー(GDG ブランド) */}
+          <div
+            aria-hidden="true"
+            className="h-1 w-full"
+            style={{
+              background:
+                "linear-gradient(90deg, var(--gdg-blue) 0 25%, var(--gdg-red) 25% 50%, var(--gdg-yellow) 50% 75%, var(--gdg-green) 75% 100%)",
+            }}
+          />
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3">
             <div className="flex items-center gap-6">
               <Link
                 to="/"
-                className="rounded font-bold text-indigo-600 text-lg focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
+                className="flex items-center gap-2.5 rounded focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
               >
-                {SITE_NAME}
+                <img src="/gdg.svg" alt="" className="h-7 w-7" />
+                <span className="font-bold text-lg text-slate-900 tracking-tight">{SITE_NAME}</span>
               </Link>
-              <nav aria-label="メイン" className="flex items-center gap-4 text-slate-600 text-sm">
-                <Link
-                  to="/courses"
-                  className="rounded hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
-                >
-                  コース一覧
-                </Link>
-                {user ? (
+              {/* コース閲覧はログイン必須(ADR #17)のため、ナビはログイン後のみ。マイページはユーザーメニュー内 */}
+              {user ? (
+                <nav aria-label="メイン" className="flex items-center gap-4 text-slate-600 text-sm">
                   <Link
-                    to="/me"
+                    to="/courses"
                     className="rounded hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
                   >
-                    マイページ
+                    コース一覧
                   </Link>
-                ) : null}
-              </nav>
+                </nav>
+              ) : null}
             </div>
             <LoginButton user={user} devLoginEnabled={data?.devLoginEnabled ?? false} />
           </div>
         </header>
         <div className="flex-1">{children}</div>
-        <footer className="border-slate-200 border-t bg-white">
-          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-6 py-4 text-slate-500 text-sm">
-            <p>© 2026 {SITE_NAME}</p>
-            <nav aria-label="フッター" className="flex items-center gap-4">
-              {/* MVP ではダミーページ不要(SPEC C §3) */}
-              <a href="#top" className="hover:text-slate-700">
-                利用規約
-              </a>
-              <a href="#top" className="hover:text-slate-700">
-                プライバシーポリシー
-              </a>
-            </nav>
-          </div>
-        </footer>
+        {hideFooter ? null : (
+          <footer className="border-slate-200 border-t bg-white">
+            <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-6 py-4 text-slate-500 text-sm">
+              <p>© 2026 {SITE_NAME}</p>
+              <nav aria-label="フッター" className="flex items-center gap-4">
+                {/* MVP ではダミーページ不要(SPEC C §3) */}
+                <a href="#top" className="hover:text-slate-700">
+                  利用規約
+                </a>
+                <a href="#top" className="hover:text-slate-700">
+                  プライバシーポリシー
+                </a>
+              </nav>
+            </div>
+          </footer>
+        )}
         <ScrollRestoration />
         <Scripts />
       </body>
