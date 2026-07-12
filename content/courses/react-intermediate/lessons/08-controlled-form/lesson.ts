@@ -85,10 +85,7 @@ root.render(<App />);
         if (nameInput === null || emailInput === null || preview === null) {
           return false;
         }
-        const setter = Object.getOwnPropertyDescriptor(
-          ctx.window.HTMLInputElement.prototype,
-          "value",
-        )?.set;
+        const setter = Object.getOwnPropertyDescriptor(ctx.window.HTMLInputElement.prototype, "value")?.set;
         if (setter === undefined) {
           return false;
         }
@@ -105,7 +102,7 @@ root.render(<App />);
   hints: [
     "入力が増えても state を1つずつ増やすと大変です。関連する入力は1つのオブジェクト state にまとめます",
     "入力に name 属性を付けておくと、handleChange の中で e.target.name でどの項目かが分かります。値は e.target.value です",
-    'setForm({ ...form, [e.target.name]: e.target.value }); と書けば、name 属性に合わせた項目だけが更新されます',
+    "setForm({ ...form, [e.target.name]: e.target.value }); と書けば、name 属性に合わせた項目だけが更新されます",
   ],
   solution: {
     "app.jsx": `function App() {

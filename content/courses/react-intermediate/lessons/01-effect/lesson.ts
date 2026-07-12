@@ -70,7 +70,7 @@ root.render(<App />);
   hints: [
     "副作用(データの読み込みやメッセージ表示など、描画のついでに起こしたい処理)は React.useEffect で書きます",
     "React.useEffect(() => { ... }, []) と書くと、中の処理はマウント時に一度だけ動きます。第2引数の [] が「最初の一度だけ」の合図です",
-    "React.useEffect(() => { setMessage(\"読み込み完了\"); }, []); と書けば完成です",
+    'React.useEffect(() => { setMessage("読み込み完了"); }, []); と書けば完成です',
   ],
   solution: {
     "app.jsx": `function App() {

@@ -120,7 +120,7 @@ root.render(<App />);
   ],
   hints: [
     "useReducer は「状態の更新ルール」を reducer 関数にまとめる仕組みです。dispatch でアクションを送り、reducer が次の状態を返します",
-    "reducer の中で action.type を見て分岐します。\"increment\" なら state + 1、\"decrement\" なら state - 1 を返します",
+    'reducer の中で action.type を見て分岐します。"increment" なら state + 1、"decrement" なら state - 1 を返します',
     'if (action.type === "increment") return state + 1; と if (action.type === "decrement") return state - 1; を書き、最後に return state; を残せば完成です',
   ],
   solution: {
