@@ -14,5 +14,6 @@ export default defineCourse({
     "react-03-fragment-list",
     "react-04-props",
     "react-05-state",
+    "react-06-events",
   ],
 });
