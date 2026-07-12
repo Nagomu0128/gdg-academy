@@ -56,7 +56,7 @@ console.log(priceOf({ name: "ペン", price: 100 }, "out"));
       id: "annotate-signature",
       file: "script.ts",
       pattern:
-        "function\\s+priceOf\\s*\\(\\s*item\\s*:\\s*Item\\s*,\\s*mode\\s*:\\s*Tax\\s*\\)\\s*:\\s*number",
+        "function\\s+priceOf\\s*\\(\\s*item\\s*:\\s*Item\\s*,\\s*mode\\s*:\\s*Tax\\s*\\)\\s*:\\s*number\\b",
       message: "priceOf に型を付けましょう(function priceOf(item: Item, mode: Tax): number の形)",
     },
     {

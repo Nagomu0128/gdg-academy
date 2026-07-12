@@ -33,21 +33,21 @@ console.log(summary("ノート", 500));
       type: "source",
       id: "annotate-name",
       file: "script.ts",
-      pattern: "productName\\s*:\\s*string",
+      pattern: "productName\\s*:\\s*string\\b",
       message: "productName に : string の型注釈を付けましょう(let productName: string = ... の形)",
     },
     {
       type: "source",
       id: "annotate-price",
       file: "script.ts",
-      pattern: "price\\s*:\\s*number",
+      pattern: "price\\s*:\\s*number\\b",
       message: "price に : number の型注釈を付けましょう",
     },
     {
       type: "source",
       id: "annotate-stock",
       file: "script.ts",
-      pattern: "inStock\\s*:\\s*boolean",
+      pattern: "inStock\\s*:\\s*boolean\\b",
       message: "inStock に : boolean の型注釈を付けましょう(真偽値は boolean です)",
     },
     {
@@ -55,7 +55,7 @@ console.log(summary("ノート", 500));
       id: "annotate-summary",
       file: "script.ts",
       pattern:
-        "function\\s+summary\\s*\\(\\s*name\\s*:\\s*string\\s*,\\s*yen\\s*:\\s*number\\s*\\)\\s*:\\s*string",
+        "function\\s+summary\\s*\\(\\s*name\\s*:\\s*string\\s*,\\s*yen\\s*:\\s*number\\s*\\)\\s*:\\s*string\\b",
       message:
         "summary の引数と戻り値に型注釈を付けましょう(function summary(name: string, yen: number): string の形)",
     },

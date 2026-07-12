@@ -29,7 +29,7 @@ console.log(first(["a", "b", "c"]));
       type: "source",
       id: "generic-signature",
       file: "script.ts",
-      pattern: "function\\s+first\\s*<\\s*T\\s*>\\s*\\(\\s*items\\s*:\\s*T\\[\\]\\s*\\)\\s*:\\s*T",
+      pattern: "function\\s+first\\s*<\\s*T\\s*>\\s*\\(\\s*items\\s*:\\s*T\\[\\]\\s*\\)\\s*:\\s*T\\b",
       message:
         "first をジェネリック関数にしましょう(function first<T>(items: T[]): T の形。<T> と T[] と : T を書きます)",
     },

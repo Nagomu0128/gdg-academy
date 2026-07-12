@@ -40,14 +40,14 @@ console.log(move("down"));
       type: "source",
       id: "annotate-param",
       file: "script.ts",
-      pattern: "dir\\s*:\\s*Dir",
+      pattern: "dir\\s*:\\s*Dir\\b",
       message: "move の引数 dir に : Dir の型を付けましょう",
     },
     {
       type: "source",
       id: "annotate-return",
       file: "script.ts",
-      pattern: "function\\s+move\\s*\\([^)]*\\)\\s*:\\s*string",
+      pattern: "function\\s+move\\s*\\([^)]*\\)\\s*:\\s*string\\b",
       message: "move の戻り値に : string を付けましょう",
     },
     {

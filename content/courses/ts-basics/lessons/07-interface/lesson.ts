@@ -43,7 +43,7 @@ console.log(createUser("みらい", 20));
       type: "source",
       id: "annotate-return",
       file: "script.ts",
-      pattern: "function\\s+createUser\\s*\\([^)]*\\)\\s*:\\s*User",
+      pattern: "function\\s+createUser\\s*\\([^)]*\\)\\s*:\\s*User\\b",
       message: "createUser の戻り値の型を : User にしましょう",
     },
     {

@@ -35,7 +35,7 @@ console.log(repeat("ab", 3));
       type: "source",
       id: "annotate-add",
       file: "script.ts",
-      pattern: "function\\s+add\\s*\\(\\s*a\\s*:\\s*number\\s*,\\s*b\\s*:\\s*number\\s*\\)\\s*:\\s*number",
+      pattern: "function\\s+add\\s*\\(\\s*a\\s*:\\s*number\\s*,\\s*b\\s*:\\s*number\\s*\\)\\s*:\\s*number\\b",
       message: "add の引数と戻り値に型を付けましょう(function add(a: number, b: number): number の形)",
     },
     {
@@ -43,7 +43,7 @@ console.log(repeat("ab", 3));
       id: "annotate-repeat",
       file: "script.ts",
       pattern:
-        "function\\s+repeat\\s*\\(\\s*text\\s*:\\s*string\\s*,\\s*times\\s*:\\s*number\\s*\\)\\s*:\\s*string",
+        "function\\s+repeat\\s*\\(\\s*text\\s*:\\s*string\\s*,\\s*times\\s*:\\s*number\\s*\\)\\s*:\\s*string\\b",
       message:
         "repeat の引数と戻り値に型を付けましょう(function repeat(text: string, times: number): string の形)",
     },

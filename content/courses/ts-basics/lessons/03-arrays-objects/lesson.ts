@@ -53,7 +53,7 @@ console.log(makeUser("みらい"));
       type: "source",
       id: "annotate-object",
       file: "script.ts",
-      pattern: ":\\s*\\{\\s*name\\s*:\\s*string\\s*\\}",
+      pattern: "function\\s+makeUser\\s*\\([^)]*\\)\\s*:\\s*\\{\\s*name\\s*:\\s*string\\s*\\}",
       message: "makeUser の戻り値に : { name: string } の型注釈を付けましょう",
     },
     {
