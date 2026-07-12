@@ -1,0 +1,17 @@
+# タプルを返す・受け取る
+
+戻り値や引数の型にも、そのままタプル型を書けます。
+
+```ts
+function makePair(name: string, age: number): [string, number] {
+  return [name, age];
+}
+
+function firstOfPair(pair: [string, number]): string {
+  return pair[0];
+}
+```
+
+- `makePair` は「文字列と数値の2要素」を返すと約束しています
+- `firstOfPair` は同じ形を受け取り、`pair[0]`(1つ目)を取り出します
+- 位置で型が決まっているので、`pair[0]` は文字列だと分かります

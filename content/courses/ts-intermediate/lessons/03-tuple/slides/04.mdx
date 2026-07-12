@@ -1,0 +1,19 @@
+# やってみよう
+
+2つの関数にタプル型を付けます。
+
+```ts
+function makePair(name: string, age: number): [string, number] {
+  return [name, age];
+}
+
+function firstOfPair(pair: [string, number]): string {
+  return pair[0];
+}
+```
+
+手順
+
+1. `makePair` の戻り値を `: [string, number]` にして `[name, age]` を返す
+2. `firstOfPair` の引数を `pair: [string, number]` にする
+3. `firstOfPair` は `pair[0]` を返す
