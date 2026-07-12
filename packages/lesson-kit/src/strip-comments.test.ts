@@ -40,6 +40,34 @@ describe("stripComments — html", () => {
     const src = "<p>a --> b</p>";
     expect(stripComments(src, "html")).toBe(src);
   });
+
+  // 属性値内の <!-- をコメント開始と誤認しない(レビュー実証: 後続の <meta> が消えていた)
+  it("属性値内の <!-- で後続要素が消えない", () => {
+    const src = '<meta content="Use <!-- for legacy"><meta name="viewport">';
+    const out = stripComments(src, "html");
+    expect(out).toContain('name="viewport"');
+    expect(out).toBe(src);
+  });
+
+  it("raw-text 要素 <style> 内の <!-- で CSS が消えない", () => {
+    const src = "<style><!-- h1 { color: red; } --></style><p>x</p>";
+    const out = stripComments(src, "html");
+    expect(out).toContain("color: red");
+    expect(out).toContain("<p>x</p>");
+    expect(out).toBe(src);
+  });
+
+  it("raw-text 要素 <script> 内の <!-- で JS が消えない", () => {
+    const src = "<script>var a = 1; // note\n</script><p>y</p>";
+    const out = stripComments(src, "html");
+    // script 内は raw-text として逐語保持(JS コメントは除去対象外)。後続要素も保持
+    expect(out).toBe(src);
+  });
+
+  it("引用符の外(データ状態)の <!-- は従来どおり除去する", () => {
+    const src = '<meta content="x"><!-- 消える --><p>z</p>';
+    expect(stripComments(src, "html")).toBe('<meta content="x"> <p>z</p>');
+  });
 });
 
 describe("stripComments — css", () => {
@@ -119,6 +147,56 @@ describe("stripComments — js", () => {
   it("コメントが無ければ原文のまま", () => {
     const src = "const a = 1 / 2;\nconst b = a / 3;";
     expect(stripComments(src, "js")).toBe(src);
+  });
+
+  // 正規表現リテラルを行コメントと誤認しない(レビュー実証: \/ の直後の / を // と誤読していた)
+  it("split(/\\//) の後続コードが消えない(レビュー実証例)", () => {
+    const src = "const parts = p.split(/\\//); markDone();";
+    const out = stripComments(src, "js");
+    expect(out).toContain("markDone()");
+    expect(out).toBe(src);
+  });
+
+  it("正規表現 /\\// をコメント開始と誤認しない", () => {
+    const src = "const re = /\\//; run();";
+    expect(stripComments(src, "js")).toBe(src);
+  });
+
+  it("正規表現 /^\\/api\\// を保持する", () => {
+    const src = "if (/^\\/api\\//.test(path)) go();";
+    expect(stripComments(src, "js")).toBe(src);
+  });
+
+  it("正規表現 /\\/\\// を保持する", () => {
+    const src = "const doubleSlash = /\\/\\//; next();";
+    expect(stripComments(src, "js")).toBe(src);
+  });
+
+  it("文字クラス内のスラッシュ /[/]/ を保持する", () => {
+    const src = "const re = /[/]/; after();";
+    expect(stripComments(src, "js")).toBe(src);
+  });
+
+  it("除算の連鎖 a / b / c は正規表現扱いしない(原文のまま)", () => {
+    const src = "const x = a / b / c;";
+    expect(stripComments(src, "js")).toBe(src);
+  });
+
+  it("return の後は正規表現(/x/ を保持しつつ行コメントは残さない)", () => {
+    const src = "function f(s){ return /x/.test(s); }";
+    expect(stripComments(src, "js")).toBe(src);
+  });
+
+  it("正規表現の後の本物の行コメントは除去する", () => {
+    const src = "const re = /a\\/b/; // 本物のコメント";
+    expect(stripComments(src, "js")).toBe("const re = /a\\/b/;  ");
+  });
+
+  it("正規表現リテラルの内側にある // はコメント扱いしない(値の除去が起きない)", () => {
+    const src = "const re = /a\\/\\/b/; keep();";
+    const out = stripComments(src, "js");
+    expect(out).toContain("keep()");
+    expect(out).toBe(src);
   });
 });
 
