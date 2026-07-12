@@ -30,6 +30,15 @@ function toPosix(p: string): string {
 }
 
 /**
+ * バンドルにバイトを寄与した input パス群から、判定バンドルに入ってはならない依存を抽出する。
+ * buildJudgeBundle 本体と共有し、fixture を作れない依存(git-sim render.ts は DOM ソースのため
+ * app の node lib 型検査に引き込めない)も含めて回帰テストできるよう純関数として公開する。
+ */
+export function forbiddenBundleInputs(inputPaths: readonly string[]): string[] {
+  return inputPaths.filter((input) => FORBIDDEN_INPUTS.some((re) => re.test(input)));
+}
+
+/**
  * lesson.ts の絶対パスを受け取り、IIFE の判定バンドル文字列を返す。
  * 実行すると `globalThis.__JUDGE__ = { start, startWorker }` が定義される(CONTRACTS §3.3)。
  */
@@ -73,7 +82,7 @@ export async function buildJudgeBundle(
       .filter(([, info]) => info.bytesInOutput > 0)
       .map(([input]) => input),
   );
-  const forbidden = contributing.filter((input) => FORBIDDEN_INPUTS.some((re) => re.test(input)));
+  const forbidden = forbiddenBundleInputs(contributing);
   if (forbidden.length > 0) {
     throw new Error(
       `判定バンドルに禁止依存(zod / acorn / sucrase / react / git-sim レンダラ)が混入しています: ${toPosix(lessonTsPath)} ← ${forbidden.join(", ")}`,
