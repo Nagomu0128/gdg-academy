@@ -1,7 +1,7 @@
 // CodeMirror 6 ラッパー(DesignDoc §2.3 / SPEC E §2)。
 // client-only: EditorView は useEffect 内でのみ生成する(SSR には載らない)。
 // 自動補完は入れない(ADR #11)。行の折返しなし・タブ幅 2・行番号あり。
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
@@ -77,6 +77,10 @@ export function CodeEditor(props: {
             },
           ]),
         ),
+        // Tab=インデント挿入 / Shift-Tab=インデント解除(defaultKeymap より先に処理)。
+        // キーボードトラップ回避: Escape の後の Tab は @codemirror/view 組み込みの
+        // tabFocusMode でフォーカスが外へ移る(readOnly 時は indentMore/Less が no-op)。
+        keymap.of([indentWithTab]),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         EditorState.readOnly.of(readOnly),
         EditorView.editable.of(!readOnly),
