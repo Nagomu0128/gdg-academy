@@ -11,5 +11,6 @@ export default defineCourse({
   lessons: [
     "react-01-first-component",
     "react-02-jsx",
+    "react-03-fragment-list",
   ],
 });
