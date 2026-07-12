@@ -121,6 +121,41 @@ git log --graph
   });
 });
 
+describe("logGraph(--graph の複数レーン)", () => {
+  it("分岐 + マージ後は複数レーンで表示し、合流点でレーンを畳む(決定的)", () => {
+    const sim = run(`
+git init
+echo a > a.txt
+git add .
+git commit -m "A"
+git switch -c feature
+echo b > b.txt
+git add .
+git commit -m "B"
+git switch main
+echo c > c.txt
+git add .
+git commit -m "C"
+git merge feature
+`);
+    // マージ(親2つ)で lane が分岐 → C(lane0)/ B(lane1)→ 共通祖先 A で lane1 を畳む。
+    // hash は FNV-1a で決定的なので固定値で assert する(このファイルの決定性テストが担保)。
+    const graph = sim.logGraph();
+    expect(graph).toBe(
+      [
+        "* ec41802 (HEAD -> main) Merge branch 'feature'",
+        "* | 3c9e33b C",
+        "| * 30a04bc (feature) B",
+        "* 264644d A",
+      ].join("\n"),
+    );
+    // レーン構造そのものも明示的に確認(失敗時に意図が読めるように)。
+    // 各行の先頭 = hash 直前までのマーカー列(`*` / `|` / 空白)
+    const lanes = graph.split("\n").map((line) => line.slice(0, line.search(/ [0-9a-f]{7}/)));
+    expect(lanes).toEqual(["*", "* |", "| *", "*"]);
+  });
+});
+
 describe("branch / switch / checkout", () => {
   const base = `
 git init
