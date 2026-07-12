@@ -14,5 +14,6 @@ export default defineCourse({
     "team-03-commit-message",
     "team-04-pull-request",
     "team-05-code-review",
+    "team-06-issue-tasks",
   ],
 });
