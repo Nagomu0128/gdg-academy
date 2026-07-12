@@ -75,6 +75,13 @@ root.render(<App />);
       message: "はじめ(1個)は #total に「100」が表示されるようにしましょう",
     },
     {
+      type: "source",
+      id: "derived-from-count",
+      file: "app.jsx",
+      pattern: "count\\s*\\*\\s*100|100\\s*\\*\\s*count",
+      message: "合計金額は count から計算しましょう(例: count * 100)。別の state で二重管理しないこと",
+    },
+    {
       type: "custom",
       id: "total-follows-count",
       message: "「1個ふやす」を押すと count が増え、#total が count × 100 になるようにしましょう",

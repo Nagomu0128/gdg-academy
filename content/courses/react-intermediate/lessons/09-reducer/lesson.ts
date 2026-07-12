@@ -82,6 +82,13 @@ root.render(<App />);
       message: "はじめは #count に「0」が表示されるようにしましょう",
     },
     {
+      type: "source",
+      id: "use-reducer",
+      file: "app.jsx",
+      pattern: "useReducer\\s*\\(",
+      message: "状態管理には React.useReducer(...) を使いましょう(useState では作り替えないこと)",
+    },
+    {
       type: "custom",
       id: "increment-action",
       message: '"increment" アクションで #count が1増えるように reducer を書きましょう',

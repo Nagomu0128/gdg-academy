@@ -78,8 +78,7 @@ root.render(<App />);
         }
         ctx.fire("#focus-btn", "click");
         await ctx.wait(60);
-        const active = ctx.document.activeElement;
-        return active === input || (active !== null && active.id === "target");
+        return ctx.document.activeElement === input;
       },
     },
   ],
