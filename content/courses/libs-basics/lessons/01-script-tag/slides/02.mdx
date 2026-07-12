@@ -1,0 +1,16 @@
+# 読み込みの型と「順序」
+
+ライブラリは自分のコードと同じく `<script>` タグで読み込みます。
+
+```html
+<script src="/vendor/dayjs.min.js"></script>
+<script src="main.js"></script>
+```
+
+- **使う側(main.js)より前に**ライブラリを読み込みます
+- 読み込むと `dayjs` という関数(グローバル変数)が使えるようになります
+- 順序が逆だと「dayjs is not defined」というエラーになります
+
+<Callout type="warn">
+script タグの順序ミスは実務でも定番のつまずきポイントです。「道具を先に、使う人を後に」と覚えましょう。
+</Callout>

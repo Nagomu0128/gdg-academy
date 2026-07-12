@@ -1,0 +1,17 @@
+# コンポーネントは「部品を返す関数」
+
+React のコンポーネントは、画面の部品を return する関数です。
+
+```jsx
+function Hello() {
+  return <h1>こんにちは、React!</h1>;
+}
+```
+
+- 関数名は大文字で始めます(`Hello`)
+- return しているのは文字列ではなく **JSX** — HTML そっくりに書ける特別な記法です
+- JSX は実行前に JavaScript へ変換されて動きます
+
+<Callout type="warn">
+JSX のタグや記号はすべて半角で書きます。`<h1>` の山かっこが全角だと動きません。
+</Callout>

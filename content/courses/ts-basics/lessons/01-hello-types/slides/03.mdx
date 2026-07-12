@@ -1,0 +1,17 @@
+# 関数にも型を書ける
+
+引数と戻り値にも型注釈を付けられます。
+
+```ts
+function describe(name: string, ver: number): string {
+  return name + " v" + ver;
+}
+```
+
+- 引数は `name: string` のように 1 つずつ
+- 戻り値の型は `)` のうしろに `: string`
+- 「何を受け取って何を返す関数か」がひと目で分かるようになります
+
+<Callout type="info">
+型注釈は実行結果を変えません。動きはそのままに、間違いを早く見つけるための安全装置です。
+</Callout>
