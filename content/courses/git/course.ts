@@ -14,5 +14,6 @@ export default defineCourse({
     "git-03-status-log",
     "git-04-diff",
     "git-05-branch-create",
+    "git-06-switch",
   ],
 });
