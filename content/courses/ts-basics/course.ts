@@ -15,5 +15,6 @@ export default defineCourse({
     "ts-04-function-types",
     "ts-05-union-narrowing",
     "ts-06-literal-alias",
+    "ts-07-interface",
   ],
 });

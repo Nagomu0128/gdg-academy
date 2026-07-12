@@ -1,0 +1,13 @@
+# interface を型として使う
+
+定義した interface は、変数や関数の型として使えます。
+
+```ts
+function createUser(name: string, age: number): User {
+  return { name: name, age: age };
+}
+```
+
+- 戻り値の型に `: User` と書けます
+- 返すオブジェクトは、User の形(name と age)を満たす必要があります
+- 足りないプロパティがあると、実行前にエディタが教えてくれます
