@@ -1,0 +1,13 @@
+# 関数につける型注釈
+
+引数は 1 つずつ、戻り値は `)` のうしろに書きます。
+
+```ts
+function greet(name: string, times: number): string {
+  return name + " さん、" + times + " 回目ですね";
+}
+```
+
+- 引数: `name: string` のように名前ごとに型を書く
+- 戻り値: `): string` の形で `)` のうしろに書く
+- 「何を受け取って何を返すか」がひと目で分かります
