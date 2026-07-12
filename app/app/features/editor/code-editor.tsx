@@ -123,7 +123,7 @@ export function CodeEditor(props: {
         <p
           id={hintId}
           data-testid="editor-tab-hint"
-          className="border-slate-200 border-t bg-slate-50 px-3 py-1 text-slate-500 text-xs"
+          className="border-slate-200 border-t bg-slate-50 px-3 py-1 text-slate-600 text-xs"
         >
           Tab: インデント / Esc のあと Tab: フォーカス移動
         </p>
