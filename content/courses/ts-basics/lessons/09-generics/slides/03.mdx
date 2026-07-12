@@ -1,0 +1,13 @@
+# 型変数 T を使う
+
+関数名のうしろに `<T>` を書くと、型を表す変数 `T` が使えます。
+
+```ts
+function first<T>(items: T[]): T {
+  return items[0];
+}
+```
+
+- `items: T[]` は「T の配列」、戻り値 `: T` は「T を 1 つ返す」
+- `first([10, 20])` なら T は number、`first(["a"])` なら T は string
+- 呼び出すときの中身から、T が自動で決まります
