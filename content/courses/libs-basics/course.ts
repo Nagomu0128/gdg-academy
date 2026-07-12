@@ -14,5 +14,6 @@ export default defineCourse({
     "lib-03-dayjs-calc",
     "lib-04-lodash-array",
     "lib-05-lodash-collection",
+    "lib-06-zod-schema",
   ],
 });
