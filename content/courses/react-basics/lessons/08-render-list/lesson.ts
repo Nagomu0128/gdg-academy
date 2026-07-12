@@ -29,7 +29,7 @@ function FruitList() {
   const fruits = ["りんご", "ばなな", "みかん"];
   return (
     <ul id="fruits">
-      {/* ここで fruits.map を使い、1要素ごとに <li key={fruit}>{fruit}</li> を作ろう */}
+      {/* 配列を map で1つずつ <li> に変換し、それぞれに key を付けよう(key には果物の名前を使う) */}
     </ul>
   );
 }

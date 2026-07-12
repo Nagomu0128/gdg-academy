@@ -27,7 +27,8 @@ export default defineLesson({
       initial: `// Card は親から渡された props.name を受け取って表示します
 function Card(props) {
   // props.name には親から渡された "タロウ" が入っています。
-  // 下の「さん」の前に {props.name} を入れて「ようこそ、タロウさん!」にしよう
+  // 下の「さん」の前に、中かっこで props.name を差し込んで
+  // 「ようこそ、タロウさん!」になるようにしよう
   return <h2>ようこそ、さん!</h2>;
 }
 

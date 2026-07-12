@@ -26,8 +26,8 @@ export default defineLesson({
     "app.jsx": {
       initial: `// Counter は「今の数」を state(状態)として持ちます
 function Counter() {
-  // 下の行を React.useState を使う形に書き換えよう(初期値は 0):
-  //   const [count, setCount] = React.useState(0);
+  // 下の const count = 0; の行を、React.useState を使って
+  // count と setCount のペアを受け取る形に書き換えよう(初期値は 0)。
   // ※ setCount は次のレッスンで使います
   const count = 0;
   return <p id="count">{count}</p>;
