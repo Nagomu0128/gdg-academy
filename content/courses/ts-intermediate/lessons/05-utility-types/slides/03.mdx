@@ -1,0 +1,25 @@
+# 3つの道具を使う
+
+それぞれを関数の型として使ってみます。
+
+```ts
+function updateUser(user: User, patch: Partial<User>): User {
+  return { ...user, ...patch };
+}
+
+function pickName(user: User): Pick<User, "name"> {
+  return { name: user.name };
+}
+
+function withoutId(user: User): Omit<User, "id"> {
+  return { name: user.name, age: user.age };
+}
+```
+
+- `Partial<User>` なので `patch` は `{ age: 21 }` のように一部だけ渡せます
+- `Pick<User, "name">` は `{ name: ... }` だけの形
+- `Omit<User, "id">` は `id` の無い `{ name, age }` の形
+
+<Callout type="info">
+型は実行時には消えます。ここでは道具で「型の形」を決め、中身のオブジェクトはふつうに組み立てます。
+</Callout>

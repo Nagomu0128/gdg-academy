@@ -13,5 +13,6 @@ export default defineCourse({
     "ts-int-02-optional-params",
     "ts-int-03-tuple",
     "ts-int-04-generics-constraint",
+    "ts-int-05-utility-types",
   ],
 });

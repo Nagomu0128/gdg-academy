@@ -1,0 +1,21 @@
+# やってみよう
+
+3つの関数の型を、ユーティリティ型で仕上げます。
+
+```ts
+function updateUser(user: User, patch: Partial<User>): User {
+  return { ...user, ...patch };
+}
+function pickName(user: User): Pick<User, "name"> {
+  return { name: user.name };
+}
+function withoutId(user: User): Omit<User, "id"> {
+  return { name: user.name, age: user.age };
+}
+```
+
+手順
+
+1. `patch` を `Partial<User>` にする
+2. `pickName` の戻り値を `Pick<User, "name">` にする
+3. `withoutId` の戻り値を `Omit<User, "id">` にする
