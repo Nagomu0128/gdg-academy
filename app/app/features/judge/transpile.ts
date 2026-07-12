@@ -73,25 +73,33 @@ export function loadedTranspiler(): Transpiler | null {
 export function loadTranspiler(): Promise<Transpiler> {
   if (cached !== null) return Promise.resolve(cached);
   if (loading !== null) return loading;
-  loading = import("sucrase").then(({ transform }) => {
-    const transpiler: Transpiler = (source, lang) => {
-      try {
-        const { code } = transform(source, {
-          transforms: TRANSFORMS[lang],
-          // classic runtime: React.createElement / React.Fragment(vendor UMD のグローバルを参照)
-          jsxRuntime: "classic",
-          production: true,
-          // 構文の downlevel はしない(sucrase は行番号を保存するため診断の行がずれない)
-          disableESTransforms: true,
-        });
-        return { ok: true, code };
-      } catch (e) {
-        return { ok: false, error: toSyntaxDiag(source, e) };
-      }
-    };
-    cached = transpiler;
-    return transpiler;
-  });
+  loading = import("sucrase")
+    .then(({ transform }) => {
+      const transpiler: Transpiler = (source, lang) => {
+        try {
+          const { code } = transform(source, {
+            transforms: TRANSFORMS[lang],
+            // classic runtime: React.createElement / React.Fragment(vendor UMD のグローバルを参照)
+            jsxRuntime: "classic",
+            production: true,
+            // 構文の downlevel はしない(sucrase は行番号を保存するため診断の行がずれない)
+            disableESTransforms: true,
+          });
+          return { ok: true, code };
+        } catch (e) {
+          return { ok: false, error: toSyntaxDiag(source, e) };
+        }
+      };
+      cached = transpiler;
+      return transpiler;
+    })
+    .catch((e) => {
+      // dynamic import 失敗(デプロイ直後のチャンク404・一時的なネットワーク断など)を
+      // rejected Promise として保持し続けない。loading を解放し、次回呼び出しで再試行できるようにする
+      //(そうしないと一度の失敗で .ts/.tsx/.jsx レッスンの judge/preview がリロードまで全滅する)。
+      loading = null;
+      throw e;
+    });
   return loading;
 }
 
