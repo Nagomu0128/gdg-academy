@@ -8,5 +8,11 @@ export default defineCourse({
     "ひとりの開発から、みんなでの開発へ。ブランチ戦略・コミットメッセージ・プルリクエスト・コードレビューまで、チームで安全に開発を進めるための「考え方」と型を学びます。",
   order: 18,
   level: "intermediate",
-  lessons: ["team-01-why", "team-02-branch-strategy", "team-03-commit-message", "team-04-pull-request"],
+  lessons: [
+    "team-01-why",
+    "team-02-branch-strategy",
+    "team-03-commit-message",
+    "team-04-pull-request",
+    "team-05-code-review",
+  ],
 });
