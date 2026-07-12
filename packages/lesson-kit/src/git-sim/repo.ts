@@ -1,4 +1,4 @@
-// git-sim のリポジトリモデル(DesignDoc ADR #21 / docs/specs/L-runtime.md)。
+// git-sim のリポジトリモデル(DesignDoc ADR #22 / docs/specs/L-runtime.md)。
 // 純 TS・依存ゼロ・決定的: 時刻は論理クロック(seq)、ハッシュは FNV-1a(hash.ts)。
 // 判定バンドルに同梱されるため、DOM / zod / acorn には一切依存しないこと。
 
