@@ -1,0 +1,25 @@
+# やってみよう
+
+`app.jsx` の `Hello` コンポーネントを完成させます。
+
+```jsx
+// 書き換える前
+function Hello() {
+  return null;
+}
+
+// 書き換えた後の形
+function Hello() {
+  return <h1>こんにちは、React!</h1>;
+}
+```
+
+手順
+
+1. `return null;` を `return <h1>こんにちは、React!</h1>;` に書き換える
+2. 「▶ 実行」でプレビューに見出しが出るのを確認する
+3. 「できた!」を押して判定する
+
+<Callout type="info">
+`index.html` は読み取り専用です。script タグの並び順(react → react-dom → app.jsx)を眺めておきましょう。
+</Callout>

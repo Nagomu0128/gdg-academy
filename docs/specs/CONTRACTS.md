@@ -61,6 +61,7 @@ export type CustomCheckContext = {
   fire: (selector: string, event: string) => void;   // bubbles:true で dispatch。click は MouseEvent
   wait: (ms: number) => Promise<void>;
   console: ConsoleEntry[];
+  files: FileMap;   // 提出ファイルの原文(hidden 含む)。git-sim 等の custom check 用(L-runtime。2026-07-12 追加)
 };
 // Check 型: element / text / attribute / style / source / console / fn / custom(§5.2 のフィールドどおり)
 // LessonDef / CourseDef / LessonFile(§4.1 のフィールドどおり)
@@ -169,7 +170,10 @@ export function loadSlide(lessonSlug: string, n: number): Promise<{ default: Rea
 // ~/features/judge(index.ts で公開)
 export function judge(lesson: LoadedLesson, files: FileMap): Promise<Verdict>;
 // - runner 種別は lesson.meta.runner で分岐(呼び出し側は意識しない — §5.1 戦略パターン)
-// - JS の instrumentLoops が ok:false → iframe/worker を起動せず即
+// - 2026-07-12(L-runtime): files の .ts/.tsx/.jsx は「sucrase 変換 → instrumentLoops → インライン化」の
+//   順で実行形にする(sucrase は dynamic import。TS を含まないレッスンではチャンクを読まない)。
+//   cfg.files / source check / エディタには常に元ソースを渡す(変換後コードは実行専用)
+// - JS/TS の構文エラー(sucrase / instrumentLoops が ok:false)→ iframe/worker を起動せず即
 //   { passed:false, display:{checkId:"__syntax__", message: error.message(行番号込)}, details:[], console:[], timedOut:false }
 // - タイムアウト(5000ms / worker 2000ms)→ TIMEOUT_MESSAGE_JP で timedOut:true
 // - 判定 iframe: 毎回新規生成、非表示(position:absolute; left:-9999px)、width:800px height:600px 固定、終了後 remove
@@ -177,10 +181,14 @@ export function judge(lesson: LoadedLesson, files: FileMap): Promise<Verdict>;
 export function composePreview(input: {
   files: FileMap;            // hidden 含む実行対象の全ファイル(呼び出し側で initial/編集値をマージ済み)
   lessonSlug: string;
-  origin: string;            // window.location.origin(CSP img-src と <base> に使用)
-}): { html: string; nonce: string; jsSyntaxError: SyntaxDiag | null };
+  origin: string;            // window.location.origin(CSP img-src / script-src と <base> に使用)
+}): Promise<{ html: string; nonce: string; jsSyntaxError: SyntaxDiag | null }>;
+// - 2026-07-12 変更(L-runtime): async 化(sucrase の遅延ロードのため。TS を含まなければ即 resolve)
 // - jsSyntaxError 時: JS は注入しない(HTML/CSSは描画される)。呼び出し側がコンソール欄にエラー表示
 // - プレビューにもループ保護を必ず適用(§6.2)
+// - preview モードのみ `globalThis.__FILES__ = <files の JSON>`(escapeJsonForScript 済みの不活性データ)を
+//   コンソールフック直後に注入する。hidden の再生スクリプト(git レッスンの preview.js 等)が原文を読める。
+//   judge モードには注入しない(判定時の files は __JUDGE__.start({ files }) 経由 = custom check は ctx.files)
 
 export function runWorkerConsole(files: FileMap): Promise<{ console: ConsoleEntry[]; timedOut: boolean; syntaxError: SyntaxDiag | null }>;
 // worker 系レッスンのプレビュー/見本用: JS を Worker で実行しコンソールを捕捉(2000ms cap)
@@ -199,7 +207,10 @@ export const JUDGE_RESULT_KIND = "judge:result";       // { kind, nonce, verdict
 - **Worker 系**: blob = ①コンソールフック ②ループ保護済ユーザー JS ③判定バンドル ④`__JUDGE__.startWorker({nonce, files})`。`self.postMessage({ kind:"judge:result", nonce, verdict })`。fn check は `globalThis[name]` を参照(**教材規約: fn 対象は function 宣言**)。
 - verdict.display = 最初に失敗した check(authored順)。message = `check.message ?? defaultMessageFor(check)`。element/attribute/style の失敗時は該当ソース(HTML は .html ファイル、style は .css)へ `diagnoseMarkupZenkaku` をかけ、ヒットしたら差し替え(§5.4)。
 - `<script>` へ埋め込む文字列は `</script` → `<\/script` エスケープ。JSON 注入は `JSON.stringify(x).replace(/</g, "\\u003c")`。
-- CSP(§6.5): `default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: {origin}`
+- CSP(§6.5。2026-07-12 変更 — ADR #21): `default-src 'none'; script-src 'unsafe-inline' {origin}; style-src 'unsafe-inline'; img-src data: {origin}`
+  script-src の {origin} は自オリジン配信の vendor スクリプト(`/vendor/*.js`)用。外部オリジンは引き続き遮断 [決定性]。
+  vendor は codegen が `app/scripts/build-vendor.ts` で毎回生成(gitignore 対象)。composer は files に無い src 参照を
+  そのまま残す既存挙動のため vendor 参照は素通りし、vendor スクリプトにはループ保護をかけない(意図どおり — L-runtime §3.1)
 
 ### 3.4 check 評価セマンティクス(runtime 実装規範)
 
@@ -363,12 +374,14 @@ FormData: `intent: "submit" | "view-solution"`。submit 時は `verdict`(Verdict
 
 **凍結(要求はレポートで)**: ルート package.json / pnpm-workspace.yaml / tsconfig.base.json / app/package.json / vite.config.ts / react-router.config.ts / app/tsconfig*.json。
 
+> **例外(L-runtime PR / feat/lesson-runtime)**: `vite.config.ts` は原則凍結だが、**dev 専用設定(`optimizeDeps.include` / `ssr.optimizeDeps.include`。`vite build` / wrangler 成果物・ランタイム非対象)に限り**本 PR で例外的に変更する。理由: 動的 import される依存(sucrase / CodeMirror / acorn 等)を dev サーバが遅延発見し、途中の再最適化 → フルリロードが Windows で dev プロセスごと落とす・検証ループを宙吊りにするため、起動時に事前最適化してレース自体を消す(L-runtime §6 / vite.config.ts 冒頭コメント)。ビルド出力・判定バンドルには一切影響しない。
+
 ## 10. UI / スタイル規約
 
 - Tailwind CSS v4(`@import "tailwindcss"` in app.css、@tailwindcss/vite)。カスタム CSS 最小限。
 - トーン: 背景 slate-50 / 文字 slate-900 / プライマリ indigo-600 / 成功 emerald-600 / 失敗 rose-600。角丸 rounded-xl、カード shadow-sm + border。コントラスト AA(§10.5)。
 - 共通 UI は `~/components/ui/`(C が Button/Card/ProgressBar/Badge を用意)。フォントはシステムスタック(外部フォント読み込み禁止)。
-- キーボード: スライド ←→、演習 Ctrl/Cmd+Enter 実行。エディタ以外の全操作はキーボード到達可能(§10.5)。
+- キーボード: スライド ←→、演習 Ctrl/Cmd+Enter 実行。全操作はキーボード到達可能。エディタ内は Tab=インデント / Escape 直後の Tab=フォーカス脱出(脱出手段の周知ヒント必須 — §10.5 / ADR #20)。
 - ユーザーコード表示(マイページ解答等)は**必ずテキストとしてエスケープ描画**(React の {} 描画は安全。dangerouslySetInnerHTML 禁止)(§10.2)。
 
 ## 11. コマンド一覧(scaffold が整備)

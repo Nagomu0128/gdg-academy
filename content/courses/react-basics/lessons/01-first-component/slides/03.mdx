@@ -1,0 +1,23 @@
+# 画面に描画するまでの型
+
+コンポーネントを画面に出すには、React 本体の読み込みと「どこに描くか」の指定が必要です。
+
+```html
+<div id="root"></div>
+<script src="/vendor/react.production.min.js"></script>
+<script src="/vendor/react-dom.production.min.js"></script>
+<script src="app.jsx"></script>
+```
+
+```jsx
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<Hello />);
+```
+
+- `react` → `react-dom` → 自分のコード、の順に読み込みます
+- `createRoot` で描画先(`#root`)を決め、`render` にコンポーネントを渡します
+- 自分で作ったコンポーネントも `<Hello />` とタグのように書けます
+
+<Callout type="info">
+このあたりの2行は毎回ほぼ同じ「決まり文句」です。今は形ごと覚えてしまって大丈夫です。
+</Callout>
