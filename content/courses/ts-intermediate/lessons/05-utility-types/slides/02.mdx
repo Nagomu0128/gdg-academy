@@ -1,0 +1,19 @@
+# もとになる型
+
+まず、もとになる型 `User` があるとします。
+
+```ts
+interface User {
+  id: number;
+  name: string;
+  age: number;
+}
+```
+
+ユーティリティ型は、この `User` を材料にして新しい型を作ります。
+
+- `Partial<User>` … すべてのプロパティが省略可能な `User`
+- `Pick<User, "name">` … `name` だけを持つ型
+- `Omit<User, "id">` … `id` を除いた型(`name` と `age`)
+
+書き方は、道具の名前のうしろに山かっこで対象を渡します。

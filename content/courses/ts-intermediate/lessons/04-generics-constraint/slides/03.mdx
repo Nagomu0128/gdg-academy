@@ -1,0 +1,18 @@
+# extends で条件を付ける
+
+型変数のうしろに `extends 形` を書くと、その形を満たす型だけを受け取れます。
+
+```ts
+function pickId<T extends { id: number }>(item: T): number {
+  return item.id;
+}
+```
+
+- `T extends { id: number }` は「`T` は少なくとも `id: number` を持つ」という意味です
+- だから `item.id` を安全に使えます
+- `id` さえ持っていれば、他にどんなプロパティがあっても渡せます
+
+```ts
+pickId({ id: 5, name: "ペン" }); // 5
+pickId({ id: 99 });              // 99
+```

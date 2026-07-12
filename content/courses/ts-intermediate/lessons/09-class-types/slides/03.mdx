@@ -1,0 +1,25 @@
+# private と public
+
+プロパティやメソッドの前に公開範囲を付けられます。
+
+```ts
+class SimpleCounter implements Counter {
+  private count: number;
+
+  constructor(start: number) {
+    this.count = start;
+  }
+
+  public increment(): void {
+    this.count = this.count + 1;
+  }
+
+  public current(): number {
+    return this.count;
+  }
+}
+```
+
+- `private count` は「クラスの外から直接は使わない」約束のプロパティです(型チェックが守ります)
+- `public` なメソッドは、外から呼び出せます
+- そのため `count` は `increment()` や `current()` を通じて操作するのが基本です

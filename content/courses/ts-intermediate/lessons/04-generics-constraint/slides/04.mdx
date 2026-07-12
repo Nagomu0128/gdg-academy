@@ -1,0 +1,15 @@
+# やってみよう
+
+`pickId` に制約付きのジェネリクスを付けます。
+
+```ts
+function pickId<T extends { id: number }>(item: T): number {
+  return item.id;
+}
+```
+
+手順
+
+1. 型変数を `<T extends { id: number }>` にする
+2. 引数を `item: T`、戻り値を `: number` にする
+3. `return item.id;` を書き、`id` を持つ別々のオブジェクトで試す
