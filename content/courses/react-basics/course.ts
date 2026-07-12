@@ -16,5 +16,6 @@ export default defineCourse({
     "react-05-state",
     "react-06-events",
     "react-07-conditional",
+    "react-08-render-list",
   ],
 });
