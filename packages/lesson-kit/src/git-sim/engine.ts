@@ -410,7 +410,7 @@ export class Engine {
     const lanes: (string | null)[] = [];
     const lines: string[] = [];
     for (const commit of commits) {
-      let lane = lanes.findIndex((h) => h === commit.hash);
+      let lane = lanes.indexOf(commit.hash);
       if (lane === -1) {
         lane = lanes.length;
         lanes.push(commit.hash);

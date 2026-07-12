@@ -40,7 +40,9 @@ describe("composeDocument × TS/JSX", () => {
   function userScriptBodies(html: string): string[] {
     return [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)]
       .map((m) => m[1] ?? "")
-      .filter((body) => !body.includes("__CONSOLE__") && !body.trimStart().startsWith("globalThis.__FILES__"));
+      .filter(
+        (body) => !body.includes("__CONSOLE__") && !body.trimStart().startsWith("globalThis.__FILES__"),
+      );
   }
 
   it("script src の .jsx を変換してインライン化する(実行コードに JSX 原文は残らない)", () => {
