@@ -1,0 +1,21 @@
+# やってみよう
+
+やることは 2 つです。
+
+1. `index.html` のコメントの位置に、dayjs を読み込む script タグを書く
+
+```html
+<script src="/vendor/dayjs.min.js"></script>
+```
+
+2. `main.js` の `text` に、整形した日付を入れる
+
+```js
+const text = day.format("YYYY年MM月DD日");
+```
+
+「▶ 実行」でプレビューに **2026年01月01日** が表示されたら「できた!」を押しましょう。
+
+<Callout type="warn">
+script タグは `main.js` より前(コメントのある行)に書きます。後ろに書くと dayjs がまだ存在せずエラーになります。
+</Callout>

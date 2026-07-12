@@ -1,4 +1,5 @@
 // 教材 codegen エントリ(CONTRACTS §8)。tsx で実行。`--validate-only` で検証のみ。
+import { buildVendor } from "../build-vendor";
 import { generateLessons } from "./lessons";
 import { generateSlides } from "./slides";
 import { runValidation } from "./validate";
@@ -11,6 +12,9 @@ async function main(): Promise<void> {
     await runValidation();
     return;
   }
+  // vendor スクリプトは gitignore のため、dev / typecheck / CI / build いずれの経路でも
+  // codegen と同時に再生成して常に存在させる(L-runtime)
+  await buildVendor();
   await generateLessons();
   await generateSlides();
   console.log("[codegen] 完了");

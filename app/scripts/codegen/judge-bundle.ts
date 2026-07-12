@@ -7,18 +7,35 @@ import { build } from "esbuild";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_RUNTIME_PATH = path.resolve(HERE, "../../app/features/judge/runtime/runtime.ts");
 
-/** 判定バンドルに入ってはならない依存(SPEC B §2: zod / acorn 禁止) */
+/**
+ * 判定バンドルに入ってはならない依存(SPEC B §2: zod / acorn 禁止。
+ * L-runtime: sucrase / react / react-dom / git-sim の DOM レンダラも禁止 —
+ * 変換はメインスレッド、React は vendor UMD、レンダラは vendor バンドル側)
+ */
 const FORBIDDEN_INPUTS: RegExp[] = [
   /[\\/]node_modules[\\/]zod[\\/]/,
   /[\\/]node_modules[\\/]acorn[\\/]/,
   /[\\/]node_modules[\\/]acorn-walk[\\/]/,
+  /[\\/]node_modules[\\/]sucrase[\\/]/,
+  /[\\/]node_modules[\\/]react[\\/]/,
+  /[\\/]node_modules[\\/]react-dom[\\/]/,
   /lesson-kit[\\/]src[\\/](schemas|loop-protect)\.ts$/,
+  /lesson-kit[\\/]src[\\/]git-sim[\\/]render\.ts$/,
 ];
 
 export type JudgeBundleResult = { code: string; bytes: number };
 
 function toPosix(p: string): string {
   return p.split(path.sep).join("/");
+}
+
+/**
+ * バンドルにバイトを寄与した input パス群から、判定バンドルに入ってはならない依存を抽出する。
+ * buildJudgeBundle 本体と共有し、fixture を作れない依存(git-sim render.ts は DOM ソースのため
+ * app の node lib 型検査に引き込めない)も含めて回帰テストできるよう純関数として公開する。
+ */
+export function forbiddenBundleInputs(inputPaths: readonly string[]): string[] {
+  return inputPaths.filter((input) => FORBIDDEN_INPUTS.some((re) => re.test(input)));
 }
 
 /**
@@ -65,10 +82,10 @@ export async function buildJudgeBundle(
       .filter(([, info]) => info.bytesInOutput > 0)
       .map(([input]) => input),
   );
-  const forbidden = contributing.filter((input) => FORBIDDEN_INPUTS.some((re) => re.test(input)));
+  const forbidden = forbiddenBundleInputs(contributing);
   if (forbidden.length > 0) {
     throw new Error(
-      `判定バンドルに禁止依存(zod / acorn)が混入しています: ${toPosix(lessonTsPath)} ← ${forbidden.join(", ")}`,
+      `判定バンドルに禁止依存(zod / acorn / sucrase / react / git-sim レンダラ)が混入しています: ${toPosix(lessonTsPath)} ← ${forbidden.join(", ")}`,
     );
   }
 
