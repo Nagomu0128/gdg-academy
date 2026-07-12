@@ -1,0 +1,14 @@
+# readonly(読み取り専用)
+
+プロパティの前に `readonly` を付けると、あとから書き換えられなくなります。
+
+```ts
+interface Book {
+  readonly id: number;
+  title: string;
+}
+```
+
+- `id` は最初に決めたら変更できません
+- `title` はふつうに変更できます
+- 書き換えようとすると、実行前にエディタが教えてくれます
