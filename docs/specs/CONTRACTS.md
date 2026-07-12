@@ -214,6 +214,8 @@ export const JUDGE_RESULT_KIND = "judge:result";       // { kind, nonce, verdict
 | fn | `globalThis[name]` が関数であり、`await fn(...args)` の戻り値が `deepEqualWithNaN(result, returns)` |
 | custom | `await run(ctx)` が truthy。throw は不合格 |
 
+**per-check タイムアウト(`CHECK_TIMEOUT_MS` = 1500ms)の著者向け注記(J-judge-hardening §2)**: 各 check は個別に 1500ms で打ち切られ、超過した check は不合格として記録され後続の評価は続行する。ただしタイムアウトは `evaluateCheck` の Promise を放置する(worker の `terminate()` のような強制停止とは非対称)ため、**打ち切り後も custom check の副作用(`ctx.fire` 後の DOM 変化、`ctx.wait` 明けの処理)はバックグラウンドで継続しうる**。判定 iframe は毎回使い捨てなので残留はしないが、custom check の `ctx.wait` の合計は **1000ms 以内**に収めること(長い待ちが必要な演出は教材側で分割する)。
+
 ## 4. DB / 認証契約
 
 ### 4.1 スキーマ(C 所有: `app/app/db/schema.ts`)
