@@ -273,6 +273,18 @@ describe("stripComments — js", () => {
     const src = "void /[a//z]/;\nmarkDone();";
     expect(stripComments(src, "js")).toBe(src);
   });
+
+  // 既知トレードオフの固定(安全側劣化の退行検知): 曖昧位置(} ) 後置 ++/--)直後の本物の除算+同一行
+  // コメントは、コード削除を防ぐ regex バイアスの副作用でコメントが消し残る。将来 ) } 判定を「賢く」して
+  // ここを除去するようにした場合、この assert が落ちて意図的な挙動変更に気づける。
+  it("[既知の割り切り] ) 直後の除算+同一行コメントはコメントを消し残す(逐語のまま)", () => {
+    // 明確な値(数値)の直後は曖昧でないため従来どおり除去される(対比)
+    expect(stripComments("1 / 2; /* c */ x", "js")).toBe("1 / 2;   x");
+    // ) 直後は regex 側に倒すため、続く本物の除算のコメントは消し残る = 入力のまま
+    expect(stripComments("f() / 2; /* c */ x", "js")).toBe("f() / 2; /* c */ x");
+    // 後置 ++ も同様(+ が prevWasValue を下ろすため)
+    expect(stripComments("x++ / 2; // c", "js")).toBe("x++ / 2; // c");
+  });
 });
 
 describe("stripCommentsForFile", () => {
