@@ -2,6 +2,7 @@
 // 教材が SSOT — solution は教材定義から直接読む(learning-flow.spec.ts と同じ流儀)。
 import { expect, type Page, test } from "@playwright/test";
 import gitLesson from "../../content/courses/git/lessons/01-init/lesson";
+import libLesson from "../../content/courses/libs-basics/lessons/01-script-tag/lesson";
 import reactLesson from "../../content/courses/react-basics/lessons/01-first-component/lesson";
 import tsLesson from "../../content/courses/ts-basics/lessons/01-hello-types/lesson";
 import { devLogin } from "./helpers";
@@ -60,6 +61,34 @@ test.describe("レッスン実行基盤(L-runtime)", () => {
     // コミット結果の出力([main <hash>] 形式)と履歴グラフも再生される
     await expect(frame.getByText(/\[main [0-9a-f]{7}\]/)).toBeVisible();
     await expect(frame.getByText(/履歴.*git log --graph/)).toBeVisible();
+
+    await submitAndExpectClear(page);
+  });
+
+  test("lib-01: dayjs を vendor script(絶対パス)で読み込み、日付整形の判定に合格する", async ({ page }) => {
+    test.setTimeout(120_000);
+    await devLogin(page);
+    await page.goto("/courses/libs-basics/lib-01-script-tag/exercise");
+
+    // 他3レッスンと違う失敗パターン: script タグを index.html に「手書き挿入」し、
+    // かつ main.js より前(絶対パス /vendor/dayjs.min.js)に置く必要がある。
+    // editable な2ファイル(index.html / main.js)の両方を solution にする。
+    const html = libLesson.solution["index.html"];
+    const mainJs = libLesson.solution["main.js"];
+    expect(html, "lib-01 の solution に index.html が存在する前提").toBeTruthy();
+    expect(mainJs, "lib-01 の solution に main.js が存在する前提").toBeTruthy();
+
+    await page.getByTestId(fileTabTestId("index.html")).click();
+    await fillEditor(page, html as string);
+    await page.getByTestId(fileTabTestId("main.js")).click();
+    await fillEditor(page, mainJs as string);
+
+    // JS 編集はプレビュー自動追従しないため、明示実行(▶ 実行)で現在のファイルを再合成する
+    await page.getByTestId("run-button").click();
+
+    // vendor の dayjs が読み込まれ、#date に整形結果が描画される(絶対パス vendor の一気通貫)
+    const frame = page.frameLocator('iframe[title="あなたの結果"]');
+    await expect(frame.locator("#date")).toHaveText("2026年01月01日", { timeout: 30_000 });
 
     await submitAndExpectClear(page);
   });
