@@ -1,0 +1,17 @@
+# 戻り値の型はいろいろ
+
+「返すもの」に合わせて戻り値の型を選びます。
+
+```ts
+function shout(text: string): string {
+  return text + "!";
+}
+
+function isAdult(age: number): boolean {
+  return age >= 20;
+}
+```
+
+- 文字列を返すなら `: string`
+- true / false を返すなら `: boolean`
+- 引数の型と戻り値の型は、別々に決められます
