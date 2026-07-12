@@ -17,5 +17,6 @@ export default defineCourse({
     "react-06-events",
     "react-07-conditional",
     "react-08-render-list",
+    "react-09-form-input",
   ],
 });
