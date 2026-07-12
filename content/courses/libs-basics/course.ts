@@ -16,5 +16,6 @@ export default defineCourse({
     "lib-05-lodash-collection",
     "lib-06-zod-schema",
     "lib-07-zod-validate",
+    "lib-08-combine",
   ],
 });
