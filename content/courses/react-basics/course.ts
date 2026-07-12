@@ -8,5 +8,8 @@ export default defineCourse({
     "画面を「部品」で組み立てる React の考え方を。最初のコンポーネントから JSX・props・状態管理まで、UI づくりの定番を学びます。",
   order: 13,
   level: "intermediate",
-  lessons: ["react-01-first-component"],
+  lessons: [
+    "react-01-first-component",
+    "react-02-jsx",
+  ],
 });
