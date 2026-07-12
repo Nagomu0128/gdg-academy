@@ -16,8 +16,8 @@ export default defineLesson({
 //    price: number
 
 // 2) 型エイリアス Tax を定義しよう
-//    "in"(税込み)か "out"(税抜き)のユニオン型
-//    type Tax = "in" | "out";
+//    "in"(税込み)か "out"(税抜き)のどちらかを表すユニオン型にします
+//    (書き方はスライドの「使う 3 つの道具」を参考に)
 
 // 3) priceOf を完成させよう
 //    引数 item は Item、mode は Tax、戻り値は number。

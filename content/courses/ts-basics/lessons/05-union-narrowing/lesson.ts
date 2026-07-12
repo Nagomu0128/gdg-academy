@@ -15,7 +15,7 @@ export default defineLesson({
 //   数値なら "数値: " + value を返す関数。
 //   引数 value は string | number、戻り値は string。
 function label(value) {
-  // ここで typeof value を使って分岐し、上のルールで文字列を返そう
+  // ここで value の型を typeof で調べ、文字列のときと数値のときで返す内容を変えよう
 
 }
 

@@ -12,9 +12,9 @@ export default defineLesson({
 //   ...?         → あってもなくてもよい(オプショナル)
 
 // 1) interface Book を定義しよう。
-//    readonly id: number   ← あとから変更できない
-//    title: string
-//    note?: string         ← あってもなくてもよい
+//    ・id は number。「あとから変更できない」readonly を先頭に付ける
+//    ・title は string
+//    ・note は string。「あってもなくてもよい」オプショナルにする
 // ここに interface Book を書こう
 
 // 2) describeBook: Book を受け取って、

@@ -11,7 +11,7 @@ export default defineLesson({
 // 型エイリアスは type 名前 = ... で「型に名前をつける」しくみです。
 
 // 1) 型エイリアス Dir を定義しよう。値は "up" か "down" のどちらか。
-//    type Dir = "up" | "down"; の形で書きます。
+//    "up" か "down" のどちらかだけを表す型を Dir という名前で作ります(書き方はスライドを参考に)。
 // ここに type Dir を書こう
 
 // 2) move: Dir を受け取って、
