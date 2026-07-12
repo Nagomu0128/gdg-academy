@@ -16,5 +16,6 @@ export default defineCourse({
     "team-05-code-review",
     "team-06-issue-tasks",
     "team-07-ci-cd",
+    "team-08-team-flow",
   ],
 });
