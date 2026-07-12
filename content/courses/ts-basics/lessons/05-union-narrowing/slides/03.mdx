@@ -1,0 +1,16 @@
+# typeof で絞り込む
+
+`typeof` で「今どちらの型か」を調べて分岐します。
+
+```ts
+function label(value: string | number): string {
+  if (typeof value === "string") {
+    return "文字列: " + value;
+  }
+  return "数値: " + value;
+}
+```
+
+- `typeof value === "string"` が true の中では、value を文字列として扱えます
+- その外(else 側)では数値として扱えます
+- これを「絞り込み(narrowing)」と呼びます

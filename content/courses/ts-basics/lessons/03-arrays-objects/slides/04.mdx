@@ -1,0 +1,21 @@
+# やってみよう
+
+`script.ts` の配列と 2 つの関数に型をつけます。
+
+```ts
+let scores: number[] = [80, 95, 70];
+
+function sum(nums: number[]): number {
+  return nums.reduce((total, n) => total + n, 0);
+}
+
+function makeUser(name: string): { name: string } {
+  return { name: name };
+}
+```
+
+手順
+
+1. `scores` に `: number[]` をつける
+2. `sum` の引数・戻り値に型をつけ、合計を `return` する
+3. `makeUser` の戻り値に `{ name: string }` をつけ、オブジェクトを `return` する

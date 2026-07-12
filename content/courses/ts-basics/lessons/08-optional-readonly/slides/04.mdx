@@ -1,0 +1,24 @@
+# やってみよう
+
+`interface Book` を定義し、`describeBook` を完成させます。
+
+```ts
+interface Book {
+  readonly id: number;
+  title: string;
+  note?: string;
+}
+
+function describeBook(book: Book): string {
+  if (book.note) {
+    return book.title + " / メモ: " + book.note;
+  }
+  return book.title;
+}
+```
+
+手順
+
+1. `interface Book` に `readonly id`、`title`、`note?` を定義する
+2. `describeBook` の引数に `: Book`、戻り値に `: string` をつける
+3. `if (book.note)` で分岐し、メモの有無で表示を変える

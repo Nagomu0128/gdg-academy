@@ -1,0 +1,20 @@
+# やってみよう
+
+`interface User` を定義し、`createUser` に型をつけます。
+
+```ts
+interface User {
+  name: string;
+  age: number;
+}
+
+function createUser(name: string, age: number): User {
+  return { name: name, age: age };
+}
+```
+
+手順
+
+1. `interface User { name: string; age: number }` を定義する
+2. `createUser` の引数と戻り値(`: User`)に型をつける
+3. `return { name: name, age: age };` を書いて「▶ 実行」で確認する

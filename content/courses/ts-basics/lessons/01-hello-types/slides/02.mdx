@@ -9,11 +9,11 @@ let age: number = 20;
 
 - 変数名のうしろに `: 型名` を書きます
 - 文字列は `string`、数値は `number`、真偽値は `boolean`
-- 約束と違う値を入れようとすると、実行する前にエディタが教えてくれます
+- 型と合わない値(例: number に文字列)は、TypeScript の型のルールに反します
 
 ```ts
 let age: number = 20;
-age = "はたち"; // エラー: number に文字列は入れられない
+age = "はたち"; // 型エラー: number に文字列は入れられない
 ```
 
 <Callout type="warn">

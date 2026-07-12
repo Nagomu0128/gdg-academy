@@ -1,0 +1,15 @@
+# オプショナル(?)
+
+プロパティ名のうしろに `?` を付けると「あってもなくてもよい」プロパティになります。
+
+```ts
+interface Book {
+  readonly id: number;
+  title: string;
+  note?: string;
+}
+```
+
+- `note?: string` は「note はあるかもしれないし、ないかもしれない」
+- ないこともあるので、使う前に `if (book.note)` で確かめます
+- この教材では、note があるとき・ないとき両方の結果を判定します

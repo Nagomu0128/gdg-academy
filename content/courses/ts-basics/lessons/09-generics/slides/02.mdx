@@ -1,0 +1,16 @@
+# なぜジェネリクスか
+
+同じ処理なのに、型ごとに関数を分けるのは大変です。
+
+```ts
+function firstNumber(items: number[]): number {
+  return items[0];
+}
+function firstString(items: string[]): string {
+  return items[0];
+}
+```
+
+- 中身はどちらも「最初の要素を返す」だけ
+- 型がちがうためだけに、関数が 2 つに増えています
+- これを 1 つにまとめたい、というのがジェネリクスの動機です
