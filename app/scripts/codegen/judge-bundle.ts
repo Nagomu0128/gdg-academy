@@ -7,12 +7,20 @@ import { build } from "esbuild";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_RUNTIME_PATH = path.resolve(HERE, "../../app/features/judge/runtime/runtime.ts");
 
-/** 判定バンドルに入ってはならない依存(SPEC B §2: zod / acorn 禁止) */
+/**
+ * 判定バンドルに入ってはならない依存(SPEC B §2: zod / acorn 禁止。
+ * L-runtime: sucrase / react / react-dom / git-sim の DOM レンダラも禁止 —
+ * 変換はメインスレッド、React は vendor UMD、レンダラは vendor バンドル側)
+ */
 const FORBIDDEN_INPUTS: RegExp[] = [
   /[\\/]node_modules[\\/]zod[\\/]/,
   /[\\/]node_modules[\\/]acorn[\\/]/,
   /[\\/]node_modules[\\/]acorn-walk[\\/]/,
+  /[\\/]node_modules[\\/]sucrase[\\/]/,
+  /[\\/]node_modules[\\/]react[\\/]/,
+  /[\\/]node_modules[\\/]react-dom[\\/]/,
   /lesson-kit[\\/]src[\\/](schemas|loop-protect)\.ts$/,
+  /lesson-kit[\\/]src[\\/]git-sim[\\/]render\.ts$/,
 ];
 
 export type JudgeBundleResult = { code: string; bytes: number };
@@ -68,7 +76,7 @@ export async function buildJudgeBundle(
   const forbidden = contributing.filter((input) => FORBIDDEN_INPUTS.some((re) => re.test(input)));
   if (forbidden.length > 0) {
     throw new Error(
-      `判定バンドルに禁止依存(zod / acorn)が混入しています: ${toPosix(lessonTsPath)} ← ${forbidden.join(", ")}`,
+      `判定バンドルに禁止依存(zod / acorn / sucrase / react / git-sim レンダラ)が混入しています: ${toPosix(lessonTsPath)} ← ${forbidden.join(", ")}`,
     );
   }
 

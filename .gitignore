@@ -39,3 +39,6 @@ blob-report/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# vendor scripts (build-vendor.ts が生成。コミットしない)
+app/public/vendor/
