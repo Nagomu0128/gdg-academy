@@ -1,0 +1,19 @@
+# オブジェクトの型
+
+`{ プロパティ名: 型 }` の形で書きます。
+
+```ts
+let user: { name: string; age: number } = {
+  name: "みらい",
+  age: 20,
+};
+```
+
+- プロパティごとに `名前: 型` を書き、`;` で区切ります
+- 関数の戻り値にも使えます
+
+```ts
+function makeUser(name: string): { name: string } {
+  return { name: name };
+}
+```
