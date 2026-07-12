@@ -125,7 +125,13 @@ describe("lintLessonChecks(ステージ1 教材リント — J-judge-hardening)"
       lesson({
         files: { "script.js": { initial: '// ここに console.log("hi") と書こう\n' } },
         checks: [
-          { id: "use-log", type: "source", file: "script.js", pattern: "console\\.log", ignoreComments: true },
+          {
+            id: "use-log",
+            type: "source",
+            file: "script.js",
+            pattern: "console\\.log",
+            ignoreComments: true,
+          },
           { id: "c", type: "console", lines: ["hi"] },
         ],
       }),

@@ -6,6 +6,7 @@ export * from "./markup-lint-css";
 export * from "./messages";
 export * from "./normalize";
 export * from "./strip-comments";
+export * from "./text-diagnosis";
 export * from "./types";
 export * from "./zenkaku";
 // schemas(zod)は意図的に index から除外: 判定バンドルへの混入防止。

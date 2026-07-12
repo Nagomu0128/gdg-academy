@@ -134,18 +134,14 @@ describe("lessonSchema — checks", () => {
 
   it("source check の ignoreComments(boolean)を受理する(後方互換の追加)", () => {
     const lesson = lessonWith({
-      checks: [
-        { id: "s", type: "source", file: "index.html", pattern: "<title>", ignoreComments: true },
-      ],
+      checks: [{ id: "s", type: "source", file: "index.html", pattern: "<title>", ignoreComments: true }],
     });
     expect(lessonSchema.safeParse(lesson).success).toBe(true);
   });
 
   it("source check の ignoreComments に boolean 以外は拒否", () => {
     const lesson = lessonWith({
-      checks: [
-        { id: "s", type: "source", file: "index.html", pattern: "<title>", ignoreComments: "yes" },
-      ],
+      checks: [{ id: "s", type: "source", file: "index.html", pattern: "<title>", ignoreComments: "yes" }],
     });
     expect(lessonSchema.safeParse(lesson).success).toBe(false);
   });

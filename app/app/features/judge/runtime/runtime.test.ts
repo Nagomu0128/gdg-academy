@@ -78,7 +78,13 @@ describe("per-check タイムアウト(CHECK_TIMEOUT_MS)", () => {
   it("タイムアウト後に遅れて reject しても未処理拒否にならない", async () => {
     vi.useFakeTimers();
     let rejectLater: ((e: Error) => void) | null = null;
-    registerFn("lateReject", () => new Promise((_, reject) => { rejectLater = reject; }));
+    registerFn(
+      "lateReject",
+      () =>
+        new Promise((_, reject) => {
+          rejectLater = reject;
+        }),
+    );
     const def = lessonWith([{ id: "late", type: "fn", name: "lateReject", args: [], returns: 1 }]);
     const promise = runChecks(def, { nonce: "n", files: {} });
     await vi.advanceTimersByTimeAsync(CHECK_TIMEOUT_MS + 50);
@@ -113,7 +119,9 @@ describe("check の throw / 異常値への耐性", () => {
       o.self = o;
       return o;
     });
-    const def = lessonWith([{ id: "cy", type: "fn", name: "cyclic", args: [], returns: { v: 1, self: null } }]);
+    const def = lessonWith([
+      { id: "cy", type: "fn", name: "cyclic", args: [], returns: { v: 1, self: null } },
+    ]);
     const verdict = await runChecks(def, { nonce: "n", files: {} });
     expect(verdict.passed).toBe(false);
     expect(verdict.details).toEqual([{ checkId: "cy", passed: false }]);

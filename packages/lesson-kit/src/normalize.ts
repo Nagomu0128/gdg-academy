@@ -66,11 +66,7 @@ function deepEqualImpl(a: unknown, b: unknown, seen: Map<object, Set<object>>): 
     return ak.every(
       (k) =>
         Object.hasOwn(b as object, k) &&
-        deepEqualImpl(
-          (a as Record<string, unknown>)[k],
-          (b as Record<string, unknown>)[k],
-          seen,
-        ),
+        deepEqualImpl((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k], seen),
     );
   } finally {
     set.delete(b as object);

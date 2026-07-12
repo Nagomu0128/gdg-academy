@@ -24,9 +24,7 @@ describe("stripComments — html", () => {
   });
 
   it("コメント内の改行は保持する(行番号を守る)", () => {
-    expect(stripComments("<p>a</p>\n<!-- 1\n2\n3 -->\n<p>b</p>", "html")).toBe(
-      "<p>a</p>\n\n\n\n<p>b</p>",
-    );
+    expect(stripComments("<p>a</p>\n<!-- 1\n2\n3 -->\n<p>b</p>", "html")).toBe("<p>a</p>\n\n\n\n<p>b</p>");
   });
 
   it("コメント内のタグ様テキストが消える", () => {
@@ -46,9 +44,7 @@ describe("stripComments — html", () => {
 
 describe("stripComments — css", () => {
   it("/* */ を除去する", () => {
-    expect(stripComments("h1 { /* color: red; */ color: blue; }", "css")).toBe(
-      "h1 {   color: blue; }",
-    );
+    expect(stripComments("h1 { /* color: red; */ color: blue; }", "css")).toBe("h1 {   color: blue; }");
   });
 
   it("文字列内の /* はコメント扱いしない", () => {
@@ -67,9 +63,7 @@ describe("stripComments — css", () => {
 
 describe("stripComments — js", () => {
   it("行コメントを除去する(改行は残す)", () => {
-    expect(stripComments("const a = 1; // メモ\nconst b = 2;", "js")).toBe(
-      "const a = 1;  \nconst b = 2;",
-    );
+    expect(stripComments("const a = 1; // メモ\nconst b = 2;", "js")).toBe("const a = 1;  \nconst b = 2;");
   });
 
   it("ブロックコメントを除去する", () => {
@@ -77,12 +71,12 @@ describe("stripComments — js", () => {
   });
 
   it("コメント内の console.log がマッチ対象から消える", () => {
-    const src = "// ここに console.log(\"hello\") と書こう\n";
+    const src = '// ここに console.log("hello") と書こう\n';
     expect(stripComments(src, "js")).not.toContain("console.log");
   });
 
   it("文字列リテラル内の // はコメント扱いしない", () => {
-    const src = 'const url = "https://example.com"; const s = \'a // b\';';
+    const src = "const url = \"https://example.com\"; const s = 'a // b';";
     expect(stripComments(src, "js")).toBe(src);
   });
 
@@ -92,12 +86,15 @@ describe("stripComments — js", () => {
   });
 
   it("テンプレートリテラルの補間内のコメントは除去する", () => {
-    expect(stripComments("const s = `v=${x /* c */ + 1}`;", "js")).toBe(
-      "const s = `v=${x   + 1}`;",
-    );
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: 走査対象の JS ソースとしての ${} が意図
+    const input = "const s = `v=${x /* c */ + 1}`;";
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: 同上
+    const expected = "const s = `v=${x   + 1}`;";
+    expect(stripComments(input, "js")).toBe(expected);
   });
 
   it("補間内のオブジェクトリテラルの } でテンプレートが壊れない", () => {
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: 走査対象の JS ソースとしての ${} が意図
     const src = "const s = `${JSON.stringify({ a: 1 })} // not comment`;";
     expect(stripComments(src, "js")).toBe(src);
   });

@@ -1,0 +1,115 @@
+# SPEC J — 合格判定ロジックの堅牢化(第2弾)
+
+先に読む: DesignDoc §5(判定エンジン)・§4.4(教材CI検証) → CONTRACTS §2, §3.4, §8。
+第1弾(CSSOM :hover 対応・構造ゲート等)の続き。本書は「弱い check が誤って合格を出す /
+異常系で不親切に落ちる」問題への体系的対策の記録: 監査した項目・実装した対策・見送りと理由・著者向けの新オプション説明。
+
+## 1. initial-must-fail 検証(教材 CI ステージ2の拡張)
+
+**不変条件**: 各レッスンは「solution で全 check 合格」に加えて「**initial(手つかずの初期コード)では不合格**」でなければならない。initial のまま合格するレッスンは check に穴がある(何も書かずにクリアできる)。
+
+- `app/app/routes/dev.validate.tsx` が全レッスンを 2 回 judge する(solution 合格 + initial 不合格)。片側だけ走らせたいときは `?variant=solution` / `?variant=initial`
+- 判定は並行度 2(`JUDGE_CONCURRENCY`)。判定 iframe / Worker は nonce と source 照合で分離されており並行安全。判定数が 2 倍になっても壁時間は従来と同程度
+- `e2e/tests/content-validation.spec.ts` が `PASS n/n` を assert(タイムアウトは 12 分 — CI 30 分枠内)
+- 違反が見つかったら **check 側を強化して直す**(count 指定・ignoreComments・挙動 check の追加など)。テストの緩和・skip は禁止
+
+## 2. per-check タイムアウト(`CHECK_TIMEOUT_MS = 1500`)
+
+**問題**: 解決しない Promise を返す fn / custom check が 1 つあると、判定全体タイムアウト(dom 5000ms / worker 2000ms)まで巻き込まれ、`Verdict.details` が空になる(`timedOut: true` の外殻フォールバック)。後続 check の結果が記録されず、表示も一般タイムアウト文言になる。
+
+**対策**: `runChecks`(runtime.ts)が 1 check ごとに `CHECK_TIMEOUT_MS`(lesson-kit `limits.ts`)で打ち切る。
+
+- タイムアウトした check は**不合格**として記録し、後続 check の評価を続行(details の完全性)
+- 表示メッセージは通常の失敗と同じ(`check.message ?? defaultMessageFor(check)`)— 学習者には「その check が未達成」という同じ意味
+- 打ち切り後に遅れて reject しても未処理拒否にならない(reject ハンドラを先に張る)
+- 外殻タイムアウト(5000/2000ms)は [フェイルセーフ] としてそのまま残る。複数の check が同時にハングする病的ケース(教材は信頼境界の内側なので実質著者バグ)では外殻が先に落ちることがある — これは仕様
+
+## 3. 監査結果と実装
+
+### 3.1 text check — 全角の空白正規化・全角英数字の診断(実装)
+
+- **空白正規化の一貫性**: `normalizeText` の `\s+` は全角スペース(U+3000)・NBSP を含む(JS 正規表現の仕様)。両辺(actual / expected)とも同じ正規化を通る — **監査の結果、既存実装は一貫しており変更不要**。テストで固定(`normalize.test.ts`)
+- **全角英数字・記号の診断**: `diagnoseTextZenkaku(actual, check)` を追加(zenkaku.ts)。text check 失敗時に「actual を半角化(`toHalfWidth`)すると合格する」場合のみ、最初の全角文字を指して「「３」が全角で入力されています。半角の「3」に直しましょう」を返す。半角化しても合格しない失敗(内容自体の間違い・期待値が全角を要求)には発火しない = **偽陽性ゼロ**(§5.4 の症状駆動と同じ原則)。runtime の失敗メッセージ差し替えチェーンに組み込み(markup 全角 → CSS タイポ → text 全角 → check.message → 既定)
+
+### 3.2 console check — trim 一貫性・重複行の部分列マッチ(監査のみ・変更不要)
+
+- 行比較は actual / expected の両方が `normalizeText`(trim + 空白畳み。全角スペース含む)を通る — 一貫している
+- 非 ordered は多重集合判定(pool から splice で消費)— 同一行が複数回期待されるケースの消費は正しい
+- ordered は貪欲な部分列判定 — 部分列の存在判定において貪欲法は常に正しい(消費バグなし)
+- **結論: バグなし**。重複行(`a,b,a`)・全角スペース混在のテストを追加して挙動を固定
+
+### 3.3 fn check — deepEqualWithNaN の -0 / 循環参照 / 深い入れ子(実装)
+
+- **-0**: `Object.is(0, -0)` は false のため、`Math.round(-0.4)`(= -0)を返した学習者が期待値 `0` で不合格になっていた。数値比較を `a === b || (NaN 同士)` に変更し **+0/-0 を等値化**(JS の `===` と同じ直感。初学者教材で -0 の判別が必要になることはない)。後方互換(等しくなる組が増えるだけ)
+- **循環参照**: 学習者の関数が循環構造を返すと再帰がスタックオーバーフロー(RangeError)していた(catch されるので check 失敗にはなるが、エンジンとして脆い)。比較中ペアの Map/Set で**循環ガード**を実装 — 再入したペアは「等しい」と仮定して打ち切る(矛盾は循環の外側で必ず false になる)。両側が同型の循環なら true
+- **深い入れ子**: 再帰深度は「両辺がともにオブジェクトである深さ」= min(depth(a), depth(b)) で抑えられる。期待値(`returns`)は著者が書くリテラルで浅いため、学習者が 100 万段の入れ子を返しても早期に false — **構造的に安全**(テストで 20 万段を検証)。追加のスタック対策は不要と判断
+
+### 3.4 element / attribute / style check — 不正 selector の失敗メッセージ(監査のみ・変更不要)
+
+- 不正な selector(`div[` 等)は `querySelectorAll` が throw → `evaluateWithTimeout` の reject ハンドラで不合格 → メッセージは `check.message ?? defaultMessageFor(check)`。学習者にブラウザの生エラーは出ない — **既定化は機能している**
+- 不正 selector は「常に失敗する check」なので、**solution も不合格になり教材 CI ステージ2が必ず検出する**(著者バグはリリース前に落ちる)。node(ステージ1)には selector パーサが無いため静的検証は追加しない
+
+### 3.5 source check — `ignoreComments` オプション(実装)
+
+**問題**: initial のコメントに書いた誘導(「ここに console.log(\"hello\") と書こう」等)へ pattern が誤マッチし、書いていないのに合格する。実教材で 1 件実在(js-11-dom の `use-textcontent` — コメント内の `.textContent` にマッチ)。
+
+**対策**: `SourceCheck` に `ignoreComments?: boolean`(既定 false — 完全後方互換)を追加。true のとき runtime は `stripCommentsForFile(check.file, content)` 後のソースへ pattern を適用する。
+
+- コメント除去は lesson-kit の新設 `strip-comments.ts`(acorn 不使用の軽量ステートマシン — 判定バンドル制約)。JS(`//`・`/* */`、文字列・テンプレートリテラル・補間を考慮)/ CSS(`/* */`、文字列考慮)/ HTML(`<!-- -->`)
+- 置換は「改行保持 + 1 空白」— コメント除去で前後トークンが結合して生まれる偽マッチを防ぎ、行番号も保存
+- 既知の制限: JS の正規表現リテラル内の `//` はコメント開始と誤認しうる(字句上不可避)。誤除去で solution が落ちる場合はステージ2が検出する
+
+### 3.6 loop-protect — 再帰爆発対策(評価のみ・実装見送り)
+
+**評価**: ループを含まない無限再帰(`function f(){ f(); } f();` や相互再帰)は instrumentLoops のカウンタ対象外。ただし:
+
+1. **同期の無限再帰はスタックオーバーフロー(RangeError)で数十 ms 以内に自己終了**する — タイムアウトまで暴走しない。エラーはコンソールフック(onerror)が捕捉し、check は通常の不合格に落ちる
+2. タイムアウトまで到達しうるのは「再帰 + 巨大アロケーション」等の病的ケースだが、外殻タイムアウト(5000/2000ms)+ 毎回使い捨ての判定 iframe / Worker terminate で回収される
+3. 対策として acorn 変換で全関数本体に呼び出しカウンタを注入する案は、(a) アロー関数の式本体のブロック化・getter/setter・generator 等で変換の複雑度と破壊リスクが高い、(b) 正当なホットな関数(再帰の見本レッスン・大量ループからのヘルパ呼び出し)への**偽陽性リスク**がある、(c) 得られる利益は「既に外殻で守られているケースの早期検出」のみ
+
+**結論: リスク > 利益で見送り**。同期再帰はエンジン特性(スタック上限)が実質のガードであり、外殻タイムアウトが最終防衛線 [フェイルセーフ]。
+
+### 3.7 codegen ステージ1 教材リント(実装)
+
+`app/scripts/codegen/validate.ts` の `lintLessonChecks`。**警告のみ**(keep-check 等の正当なケースがあるためビルドは止めない — 決定的な穴の検出はステージ2の initial-must-fail が担う)。`pnpm validate:content` で表示。
+
+| リント | 検出するもの |
+|---|---|
+| source-only レッスン | fn/console/element/text 等の挙動検証が 1 つもない(source check のみ) |
+| pattern が initial のコメント内にだけマッチ | 手つかずで合格する check。`ignoreComments: true` を提案 |
+| pattern が initial 本体にマッチ | keep-check(「消すな」系)なら意図どおり、そうでなければ穴 |
+| count 未指定 element check のタグが initial に既存 | `<li>` 等が initial にあると「1 個以上」は常に合格。count 指定を提案 |
+
+## 4. 著者向け: 新オプション・新定数
+
+### `ignoreComments: true`(source check)
+
+```ts
+// initial: 「// ここに console.log("こんにちは") と書こう」というコメント誘導がある場合
+{
+  type: "source", id: "use-log", file: "script.js",
+  pattern: "console\\.log", ignoreComments: true,   // コメント内のマッチを無視
+  message: "console.log で出力しましょう",
+}
+```
+
+- 使いどころ: initial のコメントに**コードそのものを含む誘導**を書くとき。コメントに書く誘導が自然文だけなら不要
+- keep-check(「<!doctype html> を消すな」等、initial に最初からあるコードの維持を検証する check)には付けない — initial にマッチするのが意図どおり
+- solution がコメント付きでも、除去は「コメントだけ」なのでコード本体のマッチはそのまま成立する
+
+### `CHECK_TIMEOUT_MS`(lesson-kit limits.ts)
+
+1 check の評価上限 1500ms。custom check の `ctx.wait(ms)` の合計がこれを超えないように書くこと(超えると其の check は不合格扱い)。長い待ちが必要な演出は教材側で分割する。
+
+## 5. 変更ファイル一覧
+
+- `packages/lesson-kit/src/limits.ts` — `CHECK_TIMEOUT_MS` 追加
+- `packages/lesson-kit/src/normalize.ts` — deepEqualWithNaN の +0/-0 等値化・循環ガード
+- `packages/lesson-kit/src/zenkaku.ts` — `toHalfWidth` / `diagnoseTextZenkaku` 追加
+- `packages/lesson-kit/src/strip-comments.ts` — 新設(コメント除去。deep import 可)
+- `packages/lesson-kit/src/types.ts` / `schemas.ts` — SourceCheck に `ignoreComments?: boolean`(後方互換)
+- `app/app/features/judge/runtime/runtime.ts` — per-check タイムアウト・ignoreComments 適用・text 全角診断の差し替え
+- `app/scripts/codegen/validate.ts` — ステージ1 教材リント(warnings。ビルド非停止)
+- `app/app/routes/dev.validate.tsx` — initial-must-fail 検証 + 並行度 2
+- `e2e/tests/content-validation.spec.ts` — 検証内容の拡張とタイムアウト調整
+- `content/courses/**` — initial-must-fail / リントで見つかった弱い check の強化(slug・題材は不変)
