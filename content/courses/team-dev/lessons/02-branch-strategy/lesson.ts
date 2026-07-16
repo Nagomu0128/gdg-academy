@@ -8,6 +8,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // 判定は custom check が実際の git 状態を検証する(手つかずでは feature ブランチが無く不合格)。
 export default defineLesson({
   slug: "team-02-branch-strategy",
+  published: false,
   title: "ブランチ戦略",
   estMinutes: 8,
   runner: "dom",

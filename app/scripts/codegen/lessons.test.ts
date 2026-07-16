@@ -58,6 +58,26 @@ describe("generateLessons", () => {
     expect(asset.isFile()).toBe(true);
   });
 
+  it("published: false のレッスンは生成物から除外し、全非公開のコースは content-meta からも消える(ADR #24)", async () => {
+    const appDir = await makeTempAppDir();
+    await generateLessons({ contentRoot: path.join(FIXTURES, "unpublished"), appDir });
+
+    const generatedDir = path.join(appDir, "app", "generated");
+    // モジュールは公開レッスンのみ(demo-02-unpub / hidden-01-unpub は生成しない)
+    const lessonFiles = await readdir(path.join(generatedDir, "lessons"));
+    expect(lessonFiles.sort()).toEqual(["demo-01-pub.ts"]);
+
+    const meta = JSON.parse(await readFile(path.join(generatedDir, "content-meta.json"), "utf8")) as {
+      courses: { slug: string; lessons: { slug: string }[] }[];
+    };
+    // 全レッスン非公開の hidden コースは courses ごと消える
+    expect(meta.courses.map((c) => c.slug)).toEqual(["demo"]);
+    expect(meta.courses[0]?.lessons.map((l) => l.slug)).toEqual(["demo-01-pub"]);
+
+    // 非公開レッスンの assets はコピーされない
+    await expect(stat(path.join(appDir, "public", "lesson-assets", "demo-02-unpub"))).rejects.toThrow();
+  });
+
   it("コンテンツ 0 件でも空レジストリを出力して正常終了する(CONTRACTS §3.1)", async () => {
     const appDir = await makeTempAppDir();
     const emptyContent = await makeTempAppDir();

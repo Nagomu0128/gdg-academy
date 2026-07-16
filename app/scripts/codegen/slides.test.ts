@@ -44,6 +44,19 @@ describe("generateSlides", () => {
     expect(copiedMdx).toContain("# フィクスチャスライド1");
   });
 
+  it("published: false のレッスンのスライドはコピーしない(ADR #24)", async () => {
+    const generatedDir = await makeTmpDir();
+    const unpublishedFixtures = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "__fixtures__/unpublished/courses",
+    );
+    const result = await generateSlides({ contentDir: unpublishedFixtures, generatedDir });
+
+    expect(result).toEqual({ lessonCount: 1, slideCount: 1 });
+    const slidesDir = await readdir(path.join(generatedDir, "slides"));
+    expect(slidesDir.sort()).toEqual(["demo-01-pub"]);
+  });
+
   it("content が空でも空レジストリで正常終了する", async () => {
     const generatedDir = await makeTmpDir();
     const emptyContentDir = path.join(await makeTmpDir(), "no-such-courses");

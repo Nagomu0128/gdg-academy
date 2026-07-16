@@ -7,6 +7,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // rebase は必ずエラー(コンフリクト)を出すため、custom check に !hasErrors() は入れない。
 export default defineLesson({
   slug: "git-11-rebase-conflict",
+  published: false,
   title: "rebase の衝突を解決",
   estMinutes: 8,
   runner: "dom",

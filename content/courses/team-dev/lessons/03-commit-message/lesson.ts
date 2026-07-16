@@ -5,6 +5,7 @@ import { defineLesson } from "@codesteps/lesson-kit";
 // テンプレは type 行が無いので手つかずでは不合格。1行書くと合格する。
 export default defineLesson({
   slug: "team-03-commit-message",
+  published: false,
   title: "良いコミットメッセージ",
   estMinutes: 5,
   runner: "worker",

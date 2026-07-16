@@ -5,6 +5,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // すでにあるブランチの間を git switch で移動する。currentBranch で「今どこにいるか」を検証。
 export default defineLesson({
   slug: "git-06-switch",
+  published: false,
   title: "ブランチを移動する",
   estMinutes: 5,
   runner: "dom",

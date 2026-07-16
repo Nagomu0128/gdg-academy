@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // 履歴が1本の線になる → isLinearHistory("feature") が true。main は feature の祖先になる。
 export default defineLesson({
   slug: "git-10-rebase",
+  published: false,
   title: "履歴を載せ替える",
   estMinutes: 7,
   runner: "dom",

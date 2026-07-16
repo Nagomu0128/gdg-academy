@@ -133,6 +133,11 @@ export type LessonDef = {
   /** 公開後は不変(安定識別子)。URL・DB 外部キー相当を兼ねる */
   slug: string;
   title: string;
+  /**
+   * 既定 true。false で codegen の生成物(レッスンモジュール・content-meta.json・スライド・assets)から
+   * 除外され、一覧にもルートにも現れない(ADR #24)。検証(zod・リント)は非公開でも実施する
+   */
+  published?: boolean;
   estMinutes?: number;
   /** 省略時: DOM 系 check(element/text/attribute/style/custom)が 1 つでもあれば "dom" */
   runner?: RunnerKind;

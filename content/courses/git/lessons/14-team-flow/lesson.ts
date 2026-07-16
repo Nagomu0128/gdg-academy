@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // 複数の述語の AND で「一巡できたか」を検証する。
 export default defineLesson({
   slug: "git-14-team-flow",
+  published: false,
   title: "総合: 開発フロー一巡",
   estMinutes: 10,
   runner: "dom",

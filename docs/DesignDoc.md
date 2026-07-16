@@ -202,6 +202,7 @@ export function defineLesson(def: LessonDef): LessonDef;
 type LessonDef = {
   slug: string;                // 公開後は不変(安定識別子)。URL・DB外部キー相当を兼ねる
   title: string;
+  published?: boolean;         // 既定 true。false で codegen の生成物から除外(一覧・ルートに現れない — ADR #24)
   estMinutes?: number;
   runner?: "dom" | "worker";   // 省略時: DOM系check(element/text/attribute/style)が1つでもあれば "dom"
   files: Record<string, {
@@ -638,6 +639,7 @@ E2Eの認証はGoogle実ログインを通さず、**テスト用セッション
 | 21 | TS/TSX/JSX の**クライアントサイドトランスパイル**(sucrase を dynamic import で code-split。変換 → ループ保護 → インライン化の順)+ **vendor スクリプト基盤**(react@18 UMD / dayjs / lodash / zod / git-sim を `app/public/vendor/` に codegen 時生成し自オリジン配信)+ §6.5 の CSP を `script-src 'unsafe-inline' {origin}` に拡張。source check・エディタは常に元 TS ソースに当たる(2026-07-12。詳細は docs/specs/L-runtime.md) | ADR #1(全面クライアント実行)の延長で TS/React 教材を成立させる。sucrase は行番号保存で既存の全角・構文診断がそのまま生きる。自オリジン限定なので外部オリジン遮断 = 判定の決定性は不変 | サーバーサイド変換: 提出のたびに往復しライブプレビュー(300ms)が成立しない / esbuild-wasm: 初期化 ~数MB のロードが重い / CDN 参照(unpkg 等): 外部依存で決定性・可用性が揺れ §6.5 に反する / React 19: UMD 配布がなく classic runtime と両立しない |
 | 22 | Git 教材は実 git ではなく**決定的シミュレータ(lesson-kit の git-sim)+ commands.sh 再生方式**: 学習者は commands.sh にコマンド列を書き、プレビューは vendor の GitSim がターミナル風に再生、判定は同一エンジンを判定バンドルに同梱して custom check の述語(`isMerged` / `isClean` 等)で状態を検査する。ハッシュは FNV-1a + 論理クロックで完全決定的(2026-07-12。対応コマンド一覧は docs/specs/content-common-2.md §5) | ブラウザ内サンドボックス(ADR #1)で実 git は動かせない。判定・再生・シードが同一エンジンなので期待状態の二重管理がない [SSOT]。同一入力 → 同一ハッシュで check が安定 [決定性] | wasm-git 等の実 git 移植: バンドル数MB・出力が英語で初学者向け整形が別途必要・時刻依存でハッシュが毎回変わり判定が書けない / サーバー実行: ADR #1 に反する / transcript の文字列比較のみの判定: 別解(コマンド順の入れ替え等)を不当に弾く |
 | 23 | 判定の堅牢化第2弾: **per-check タイムアウト**(`CHECK_TIMEOUT_MS` = 1500ms)を導入し、解決しない Promise を返す fn/custom check が判定全体を巻き込んで `Verdict.details` を空にするのを防ぐ・教材 CI(§4.4)に **initial-must-fail 検証**を必須化(initial のまま合格する = check の穴を構造的に検出)・source check に **`ignoreComments`** を追加(initial コメント内のサンプルコードへの誤マッチ防止)(2026-07。詳細は docs/specs/J-judge-hardening.md) | 弱い check が誤って合格を出す/異常系で details が空になる穴を塞ぎ、§5「振る舞いをテスト」を自己整合性と記録完全性の両面で補強する | 外殻タイムアウトのみ(details 欠落を許容): 記録の完全性を欠く / solution 検証のみで initial 未検証: 何も書かずにクリアできる穴を見逃す / コメント除去なしで pattern を厳密化: 著者に過度な負担 |
+| 24 | レッスン単位の**公開フラグ** `LessonDef.published?: boolean`(既定 true)を追加。false のレッスンは codegen の生成物(レッスンモジュール・content-meta.json・スライド・assets)から除外され、一覧・ルート・進捗集計・提出 API(§9.1 は content-meta 照合で 404)が自動追従する。全レッスン非公開のコースは content-meta からコースごと消える。検証ステージ1(zod・構造リント)は非公開でも実施し再公開に備える(ステージ2の自己整合性検証は content-meta 走査のため対象外)。UI に公開状態は表示しない。初適用として git / team-dev の全レッスンを非公開化(2026-07-16) | 公開制御を教材リポジトリ内で完結させる(DB・CMS を持たない ADR #6 と整合)。ビルド時除外なので非公開教材はクライアントに一切配信されない | ルート側での表示フィルタ: solution 等が配信され続け、除外漏れの面が広い / course.lessons からの削除: ディレクトリと course.ts の 1:1 検証(§4.4)が壊れ、再公開時に順序復元の手作業が要る |
 
 ## 14. ロードマップ(スコープ外・方針決定済み)
 

@@ -5,6 +5,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // ブランチ作成の2つの書き方を学ぶ: git branch(作るだけ)と git switch -c(作って移動)。
 export default defineLesson({
   slug: "git-05-branch-create",
+  published: false,
   title: "ブランチを作る",
   estMinutes: 6,
   runner: "dom",

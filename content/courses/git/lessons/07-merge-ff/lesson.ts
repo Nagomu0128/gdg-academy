@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // マージコミットはできない → isLinearHistory("main") が true のまま。
 export default defineLesson({
   slug: "git-07-merge-ff",
+  published: false,
   title: "マージ(早送り)",
   estMinutes: 7,
   runner: "dom",

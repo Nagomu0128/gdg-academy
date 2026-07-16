@@ -5,6 +5,7 @@ import { defineLesson } from "@codesteps/lesson-kit";
 // テンプレ(コメントのみ)にはキーワードが無いので手つかずでは不合格、記入すると合格する。
 export default defineLesson({
   slug: "team-01-why",
+  published: false,
   title: "チーム開発とは",
   estMinutes: 5,
   runner: "worker",
