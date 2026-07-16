@@ -4,6 +4,7 @@
 import type { FileMap, Verdict } from "@codesteps/lesson-kit";
 import { TIMEOUT_MESSAGE_JP } from "@codesteps/lesson-kit";
 import clsx from "clsx";
+import type * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFetcher } from "react-router";
 import { CodeEditor } from "~/features/editor/code-editor";
@@ -15,6 +16,7 @@ import type { ExerciseState, SubmitResult } from "~/features/progress/types";
 import type { LoadedLesson } from "~/generated/lessons.client";
 import { ClearScreen } from "./clear-screen";
 import { GuidePanel } from "./guide-panel";
+import { clampGuideWidth, clampPreviewWidth, GUIDE_DEFAULT_WIDTH, KEYBOARD_RESIZE_STEP } from "./pane-resize";
 import { PreviewPane } from "./preview-pane";
 import { SolutionModal } from "./solution-modal";
 import type { ExerciseActionData, PreviewState, PreviewTab, WorkerView } from "./types";
@@ -42,6 +44,48 @@ function Spinner() {
     <span
       aria-hidden="true"
       className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent motion-reduce:animate-none"
+    />
+  );
+}
+
+type ResizeHandleProps = {
+  label: string;
+  /** 現在のペイン幅(px)。flex 追従中(未ドラッグ)は null */
+  valueNow: number | null;
+  onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerEnd: (e: React.PointerEvent<HTMLDivElement>) => void;
+  /** 矢印キーによる調整。deltaX はハンドルの移動量(右向き正) */
+  onKeyAdjust: (deltaX: number) => void;
+  /** ダブルクリックで既定幅に戻す */
+  onReset: () => void;
+};
+
+/** md+ 専用のペイン境界ドラッグハンドル。setPointerCapture で iframe 上でも追従が切れない */
+function ResizeHandle(props: ResizeHandleProps) {
+  return (
+    // biome-ignore lint/a11y/useSemanticElements: フォーカス可能なウィンドウスプリッター(WAI-ARIA window splitter パターン)は div + role="separator" が正。<hr> は水平・非インタラクティブで代替にならない
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={props.label}
+      aria-valuenow={props.valueNow === null ? undefined : Math.round(props.valueNow)}
+      tabIndex={0}
+      onPointerDown={props.onPointerDown}
+      onPointerMove={props.onPointerMove}
+      onPointerUp={props.onPointerEnd}
+      onPointerCancel={props.onPointerEnd}
+      onDoubleClick={props.onReset}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          props.onKeyAdjust(-KEYBOARD_RESIZE_STEP);
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          props.onKeyAdjust(KEYBOARD_RESIZE_STEP);
+        }
+      }}
+      className="hidden w-1.5 shrink-0 cursor-col-resize touch-none bg-slate-200/70 outline-none transition-colors hover:bg-indigo-300 focus-visible:bg-indigo-400 active:bg-indigo-400 md:block"
     />
   );
 }
@@ -309,6 +353,90 @@ export default function ExerciseScreen(props: ExerciseScreenProps) {
   // ---- md 未満のタブ切替(§2.6) ----
   const [mobilePane, setMobilePane] = useState<MobilePane>("code");
 
+  // ---- md+ ペイン幅のドラッグ調整(クランプ計算は pane-resize.ts の純関数) ----
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const previewSectionRef = useRef<HTMLElement | null>(null);
+  const [guideWidth, setGuideWidth] = useState(GUIDE_DEFAULT_WIDTH);
+  // null = 従来どおり flex-1(エディタと等分)。一度ドラッグしたら px 固定に切り替わる
+  const [previewWidth, setPreviewWidth] = useState<number | null>(null);
+  const dragRef = useRef<{
+    pane: "guide" | "preview";
+    startX: number;
+    startWidth: number;
+    rowWidth: number;
+    otherWidth: number;
+  } | null>(null);
+
+  const measurePanes = useCallback(() => {
+    const row = rowRef.current;
+    const preview = previewSectionRef.current;
+    if (row === null || preview === null) return null;
+    return {
+      rowWidth: row.getBoundingClientRect().width,
+      previewWidth: preview.getBoundingClientRect().width,
+    };
+  }, []);
+
+  const beginResize = useCallback(
+    (pane: "guide" | "preview") => (e: React.PointerEvent<HTMLDivElement>) => {
+      const measured = measurePanes();
+      if (measured === null) return;
+      e.preventDefault();
+      try {
+        // capture 中は iframe 上でも pointermove がハンドルへ届き続ける
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // pointerdown 直後に離された等で capture できなくても、ドラッグ自体は継続できる
+      }
+      // 初ドラッグ時に flex 追従から px 固定へ切り替える(実測幅から開始するので見た目は変わらない)
+      if (pane === "preview") setPreviewWidth(measured.previewWidth);
+      dragRef.current = {
+        pane,
+        startX: e.clientX,
+        startWidth: pane === "guide" ? guideWidth : measured.previewWidth,
+        rowWidth: measured.rowWidth,
+        otherWidth: pane === "guide" ? measured.previewWidth : guideWidth,
+      };
+    },
+    [measurePanes, guideWidth],
+  );
+
+  const moveResize = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (drag === null) return;
+    const delta = e.clientX - drag.startX;
+    if (drag.pane === "guide") {
+      setGuideWidth(clampGuideWidth(drag.startWidth + delta, drag.rowWidth, drag.otherWidth));
+    } else {
+      setPreviewWidth(clampPreviewWidth(drag.startWidth - delta, drag.rowWidth, drag.otherWidth));
+    }
+  }, []);
+
+  const endResize = useCallback(() => {
+    dragRef.current = null;
+  }, []);
+
+  const adjustGuideWidth = useCallback(
+    (deltaX: number) => {
+      const measured = measurePanes();
+      if (measured === null) return;
+      setGuideWidth((w) => clampGuideWidth(w + deltaX, measured.rowWidth, measured.previewWidth));
+    },
+    [measurePanes],
+  );
+
+  const adjustPreviewWidth = useCallback(
+    (deltaX: number) => {
+      const measured = measurePanes();
+      if (measured === null) return;
+      // ハンドルを右へ動かす(deltaX 正)= プレビューが狭くなる
+      setPreviewWidth((w) =>
+        clampPreviewWidth((w ?? measured.previewWidth) - deltaX, measured.rowWidth, guideWidth),
+      );
+    },
+    [measurePanes, guideWidth],
+  );
+
   const submitBusy = judging || submitFetcher.state !== "idle";
   const judgeTone = judging
     ? "text-slate-600"
@@ -388,12 +516,21 @@ export default function ExerciseScreen(props: ExerciseScreenProps) {
         ))}
       </div>
 
-      <div className="flex min-h-0 flex-1">
-        {/* 左: 手順・ヒント */}
+      <div
+        ref={rowRef}
+        className="flex min-h-0 flex-1"
+        style={
+          {
+            "--guide-w": `${guideWidth}px`,
+            ...(previewWidth !== null ? { "--preview-w": `${previewWidth}px` } : {}),
+          } as React.CSSProperties
+        }
+      >
+        {/* 左: 手順・ヒント(md+ は境界ハンドルで幅を変更できる) */}
         <aside
           className={clsx(
             mobilePane === "guide" ? "flex" : "hidden",
-            "min-h-0 w-full flex-col overflow-y-auto border-slate-200 md:flex md:w-80 md:shrink-0 md:border-r",
+            "min-h-0 w-full flex-col overflow-y-auto md:flex md:w-[var(--guide-w)] md:shrink-0",
           )}
         >
           <GuidePanel
@@ -410,11 +547,21 @@ export default function ExerciseScreen(props: ExerciseScreenProps) {
           />
         </aside>
 
+        <ResizeHandle
+          label="手順ペインの幅を変更"
+          valueNow={guideWidth}
+          onPointerDown={beginResize("guide")}
+          onPointerMove={moveResize}
+          onPointerEnd={endResize}
+          onKeyAdjust={adjustGuideWidth}
+          onReset={() => setGuideWidth(GUIDE_DEFAULT_WIDTH)}
+        />
+
         {/* 中央: ファイルタブ(3ファイル以上の md+ はファイルツリー)+ エディタ + 実行 */}
         <section
           className={clsx(
             mobilePane === "code" ? "flex" : "hidden",
-            "min-h-0 min-w-0 flex-1 border-slate-200 md:flex md:border-r",
+            "min-h-0 min-w-0 flex-1 md:flex",
             useFileTree ? "flex-row" : "flex-col",
           )}
         >
@@ -439,11 +586,24 @@ export default function ExerciseScreen(props: ExerciseScreenProps) {
           )}
         </section>
 
-        {/* 右: プレビュー + 判定メッセージ(位置固定) */}
+        <ResizeHandle
+          label="プレビューペインの幅を変更"
+          valueNow={previewWidth}
+          onPointerDown={beginResize("preview")}
+          onPointerMove={moveResize}
+          onPointerEnd={endResize}
+          onKeyAdjust={adjustPreviewWidth}
+          onReset={() => setPreviewWidth(null)}
+        />
+
+        {/* 右: プレビュー + 判定メッセージ(位置固定。md+ は境界ハンドルで幅を変更できる) */}
         <section
+          ref={previewSectionRef}
           className={clsx(
             mobilePane === "preview" ? "flex" : "hidden",
             "min-h-0 min-w-0 flex-1 flex-col md:flex",
+            // 一度ドラッグしたら md+ は px 固定(md 未満のタブ表示は flex-1 のまま)
+            previewWidth !== null && "md:w-[var(--preview-w)] md:flex-none md:shrink-0",
           )}
         >
           <PreviewPane
