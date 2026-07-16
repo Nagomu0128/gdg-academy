@@ -65,14 +65,18 @@ describe("generateLessons", () => {
     const generatedDir = path.join(appDir, "app", "generated");
     // モジュールは公開レッスンのみ(demo-02-unpub / hidden-01-unpub は生成しない)
     const lessonFiles = await readdir(path.join(generatedDir, "lessons"));
-    expect(lessonFiles.sort()).toEqual(["demo-01-pub.ts"]);
+    expect(lessonFiles.sort()).toEqual(["demo-01-pub.ts", "demo-03-pub2.ts"]);
 
     const meta = JSON.parse(await readFile(path.join(generatedDir, "content-meta.json"), "utf8")) as {
-      courses: { slug: string; lessons: { slug: string }[] }[];
+      courses: { slug: string; lessons: { slug: string; order: number }[] }[];
     };
     // 全レッスン非公開の hidden コースは courses ごと消える
     expect(meta.courses.map((c) => c.slug)).toEqual(["demo"]);
-    expect(meta.courses[0]?.lessons.map((l) => l.slug)).toEqual(["demo-01-pub"]);
+    // 中間の非公開(02)を除外し、order は公開レッスンのみで 1 から振り直す(歯抜けにしない)
+    expect(meta.courses[0]?.lessons.map((l) => [l.slug, l.order])).toEqual([
+      ["demo-01-pub", 1],
+      ["demo-03-pub2", 2],
+    ]);
 
     // 非公開レッスンの assets はコピーされない
     await expect(stat(path.join(appDir, "public", "lesson-assets", "demo-02-unpub"))).rejects.toThrow();

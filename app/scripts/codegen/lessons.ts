@@ -154,11 +154,14 @@ export async function generateLessons(opts?: { contentRoot?: string; appDir?: st
   }
 
   // 非公開レッスン(published: false — ADR #24)は検証済みのまま生成物から除外する。
-  // 全レッスン非公開のコースは content-meta からも消える(一覧・ルート・進捗集計が自動追従)
+  // 全レッスン非公開のコースは content-meta からも消える(一覧・ルート・進捗集計が自動追従)。
+  // order は公開レッスンのみで 1 から振り直す(歯抜け番号が非公開の存在を暗示しないように)
   const courses = discovered
     .map((course) => ({
       ...course,
-      lessons: course.lessons.filter((lesson) => lesson.def.published !== false),
+      lessons: course.lessons
+        .filter((lesson) => lesson.def.published !== false)
+        .map((lesson, i) => ({ ...lesson, order: i + 1 })),
     }))
     .filter((course) => course.lessons.length > 0);
   const totalDiscovered = discovered.reduce((acc, c) => acc + c.lessons.length, 0);

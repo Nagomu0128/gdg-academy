@@ -52,9 +52,9 @@ describe("generateSlides", () => {
     );
     const result = await generateSlides({ contentDir: unpublishedFixtures, generatedDir });
 
-    expect(result).toEqual({ lessonCount: 1, slideCount: 1 });
+    expect(result).toEqual({ lessonCount: 2, slideCount: 2 });
     const slidesDir = await readdir(path.join(generatedDir, "slides"));
-    expect(slidesDir.sort()).toEqual(["demo-01-pub"]);
+    expect(slidesDir.sort()).toEqual(["demo-01-pub", "demo-03-pub2"]);
   });
 
   it("content が空でも空レジストリで正常終了する", async () => {
