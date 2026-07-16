@@ -5,6 +5,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // diff は「まだ記録していない変更」を確認するコマンド。ステージ前後で見える差分が変わる。
 export default defineLesson({
   slug: "git-04-diff",
+  published: false,
   title: "変更を確認する",
   estMinutes: 6,
   runner: "dom",

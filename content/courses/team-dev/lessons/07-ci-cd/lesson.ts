@@ -5,6 +5,7 @@ import { defineLesson } from "@codesteps/lesson-kit";
 // Q3・Q4 は「ラベル行の右側」を見る anchored パターンなので、コメント中の main には反応しない。
 export default defineLesson({
   slug: "team-07-ci-cd",
+  published: false,
   title: "CI/CDの基本",
   estMinutes: 5,
   runner: "worker",

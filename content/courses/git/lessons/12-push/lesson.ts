@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // 以降は git push だけで送れる。remoteBranchExists でリモートに実体ができたか検証。
 export default defineLesson({
   slug: "git-12-push",
+  published: false,
   title: "リモートへ送る",
   estMinutes: 6,
   runner: "dom",

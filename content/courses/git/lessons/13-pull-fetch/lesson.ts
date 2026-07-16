@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // fetch は追跡参照を更新するだけ、pull は取得して取り込む(ここでは fast-forward)。
 export default defineLesson({
   slug: "git-13-pull-fetch",
+  published: false,
   title: "リモートと同期する",
   estMinutes: 7,
   runner: "dom",

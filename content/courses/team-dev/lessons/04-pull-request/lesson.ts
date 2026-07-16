@@ -5,6 +5,7 @@ import { defineLesson } from "@codesteps/lesson-kit";
 // テンプレは ## 見出しも箇条書きも無いので手つかずでは不合格。書き込むと合格する。
 export default defineLesson({
   slug: "team-04-pull-request",
+  published: false,
   title: "プルリクエストの作り方",
   estMinutes: 6,
   runner: "worker",

@@ -52,12 +52,15 @@ async function listDirents(dir: string): Promise<Dirent[]> {
   }
 }
 
-/** lesson.ts(default export の defineLesson 結果)から slug を読む。slug が SSOT(CONTRACTS §8)。 */
-async function readLessonSlug(lessonTsPath: string): Promise<string | null> {
+/** lesson.ts(default export の defineLesson 結果)から slug と published を読む。slug が SSOT(CONTRACTS §8)。 */
+async function readLessonMeta(lessonTsPath: string): Promise<{ slug: string; published: boolean } | null> {
   try {
-    const mod = (await import(pathToFileURL(lessonTsPath).href)) as { default?: { slug?: unknown } };
+    const mod = (await import(pathToFileURL(lessonTsPath).href)) as {
+      default?: { slug?: unknown; published?: unknown };
+    };
     const slug = mod.default?.slug;
-    return typeof slug === "string" && slug.length > 0 ? slug : null;
+    if (typeof slug !== "string" || slug.length === 0) return null;
+    return { slug, published: mod.default?.published !== false };
   } catch {
     return null;
   }
@@ -88,17 +91,20 @@ export async function generateSlides(options: GenerateSlidesOptions = {}): Promi
         .sort();
       if (slideFiles.length === 0) continue; // スライドなしのレッスンは対象外(検証は B のステージ1)
 
-      const slug = await readLessonSlug(path.join(lessonDir, "lesson.ts"));
-      if (!slug) {
+      const lessonMeta = await readLessonMeta(path.join(lessonDir, "lesson.ts"));
+      if (!lessonMeta) {
         console.warn(
           `[codegen:slides] ${courseEnt.name}/${lessonEnt.name}: lesson.ts から slug を読めないためスキップ`,
         );
         continue;
       }
+      const { slug, published } = lessonMeta;
       if (seenSlugs.has(slug)) {
         throw new Error(`[codegen:slides] slug 重複: ${slug}(${courseEnt.name}/${lessonEnt.name})`);
       }
       seenSlugs.add(slug);
+      // 非公開レッスン(ADR #24)のスライドは配信物に含めない(lessons 側の除外と対称)
+      if (!published) continue;
 
       // 01.mdx から連番であることを確認(loadSlide は 1..slideCount を仮定する)
       slideFiles.forEach((name, i) => {

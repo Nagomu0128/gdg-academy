@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // custom check は複数述語で最終状態(main に戻り・Conventional Commit が取り込まれ・feature 削除済み・clean)を検証する。
 export default defineLesson({
   slug: "team-08-team-flow",
+  published: false,
   title: "総合: 開発フロー一巡",
   estMinutes: 10,
   runner: "dom",

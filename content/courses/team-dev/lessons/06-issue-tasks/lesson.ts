@@ -5,6 +5,7 @@ import { defineLesson } from "@codesteps/lesson-kit";
 // ガイドはすべて <!-- --> コメント(行頭 <)なので手つかずでは不合格。書き込むと合格する。
 export default defineLesson({
   slug: "team-06-issue-tasks",
+  published: false,
   title: "Issueとタスク分割",
   estMinutes: 6,
   runner: "worker",

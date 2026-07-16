@@ -144,13 +144,30 @@ export async function generateLessons(opts?: { contentRoot?: string; appDir?: st
   const lessonsDir = path.join(generatedDir, "lessons");
   const assetsRoot = path.join(appDir, "public", "lesson-assets");
 
-  const { courses, errors } = await discoverContent(contentRoot);
+  const { courses: discovered, errors } = await discoverContent(contentRoot);
   if (errors.length > 0) {
     console.error(`[codegen] 教材検証エラー(${errors.length} 件):`);
     for (const error of errors) {
       console.error(`  - ${error}`);
     }
     throw new Error(`教材検証に失敗しました(${errors.length} 件)`);
+  }
+
+  // 非公開レッスン(published: false — ADR #24)は検証済みのまま生成物から除外する。
+  // 全レッスン非公開のコースは content-meta からも消える(一覧・ルート・進捗集計が自動追従)。
+  // order は公開レッスンのみで 1 から振り直す(歯抜け番号が非公開の存在を暗示しないように)
+  const courses = discovered
+    .map((course) => ({
+      ...course,
+      lessons: course.lessons
+        .filter((lesson) => lesson.def.published !== false)
+        .map((lesson, i) => ({ ...lesson, order: i + 1 })),
+    }))
+    .filter((course) => course.lessons.length > 0);
+  const totalDiscovered = discovered.reduce((acc, c) => acc + c.lessons.length, 0);
+  const totalPublished = courses.reduce((acc, c) => acc + c.lessons.length, 0);
+  if (totalPublished < totalDiscovered) {
+    console.log(`[codegen] 非公開レッスンを除外: ${totalDiscovered - totalPublished} 件(published: false)`);
   }
 
   // 生成物ディレクトリの掃除(slug 改名時の残骸を残さない)

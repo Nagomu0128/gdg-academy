@@ -5,6 +5,7 @@ import { defineLesson } from "@codesteps/lesson-kit";
 // 本文チェック(id: body)は「行頭が < でも # でも空白でもない行」= 学習者が書いた地の文を要求する。
 export default defineLesson({
   slug: "team-05-code-review",
+  published: false,
   title: "コードレビューの作法",
   estMinutes: 6,
   runner: "worker",

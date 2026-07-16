@@ -171,6 +171,7 @@ export const lessonSchema = z
   .object({
     slug: z.string().regex(slugPattern),
     title: z.string().min(1),
+    published: z.boolean().optional(),
     estMinutes: z.number().int().positive().optional(),
     runner: z.enum(["dom", "worker"]).optional(),
     files: z.record(z.string().min(1), lessonFileSchema),

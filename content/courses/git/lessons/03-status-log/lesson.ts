@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // custom check で「状態が変わっていない(壊していない)」ことを保証する。
 export default defineLesson({
   slug: "git-03-status-log",
+  published: false,
   title: "状態と履歴を見る",
   estMinutes: 5,
   runner: "dom",

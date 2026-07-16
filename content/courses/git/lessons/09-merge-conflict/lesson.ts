@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // merge は必ずエラー(コンフリクト)を出すため、custom check に !hasErrors() は入れない。
 export default defineLesson({
   slug: "git-09-merge-conflict",
+  published: false,
   title: "コンフリクトを解決する",
   estMinutes: 8,
   runner: "dom",

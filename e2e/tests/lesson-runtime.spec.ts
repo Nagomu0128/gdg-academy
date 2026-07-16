@@ -47,6 +47,8 @@ test.describe("レッスン実行基盤(L-runtime)", () => {
   });
 
   test("git-01: プレビューにターミナル再生(コマンドと出力)が表示され、判定に合格する", async ({ page }) => {
+    // 非公開レッスン(ADR #24)は生成物から除外されルートが 404 になるため、再公開までスキップ
+    test.skip(gitLesson.published === false, "git-01 は非公開(published: false)のため製品ルートが存在しない");
     test.setTimeout(120_000);
     await devLogin(page);
     await page.goto("/courses/git/git-01-init/exercise");
@@ -69,6 +71,11 @@ test.describe("レッスン実行基盤(L-runtime)", () => {
   test("git-14: 総合レッスンのフロー一巡(分岐→コミット→マージ→push)が再生され、判定に合格する", async ({
     page,
   }) => {
+    // 非公開レッスン(ADR #24)は生成物から除外されルートが 404 になるため、再公開までスキップ
+    test.skip(
+      gitTeamFlowLesson.published === false,
+      "git-14 は非公開(published: false)のため製品ルートが存在しない",
+    );
     test.setTimeout(120_000);
     await devLogin(page);
     await page.goto("/courses/git/git-14-team-flow/exercise");

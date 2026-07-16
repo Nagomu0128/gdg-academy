@@ -8,6 +8,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // - 判定: custom check が ctx.files から commands.sh を GitSim に通して状態を検証する
 export default defineLesson({
   slug: "git-01-init",
+  published: false,
   title: "リポジトリをつくろう",
   estMinutes: 6,
   runner: "dom",

@@ -54,6 +54,15 @@ describe("lessonSchema — 正常系", () => {
     });
     expect(lessonSchema.safeParse(lesson).success).toBe(true);
   });
+
+  it("published(boolean)を受理する(ADR #24。省略も可)", () => {
+    expect(lessonSchema.safeParse(lessonWith({ published: false })).success).toBe(true);
+    expect(lessonSchema.safeParse(lessonWith({ published: true })).success).toBe(true);
+  });
+
+  it("published に boolean 以外は拒否", () => {
+    expect(lessonSchema.safeParse(lessonWith({ published: "no" })).success).toBe(false);
+  });
 });
 
 describe("lessonSchema — slug", () => {

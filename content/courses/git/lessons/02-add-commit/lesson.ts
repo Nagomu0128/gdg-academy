@@ -6,6 +6,7 @@ import { GitSim } from "@codesteps/lesson-kit/git-sim";
 // index.html / preview.js は git-01 からのコピー(変更不要)。
 export default defineLesson({
   slug: "git-02-add-commit",
+  published: false,
   title: "変更を記録する",
   estMinutes: 6,
   runner: "dom",
