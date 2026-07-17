@@ -19,7 +19,9 @@ import "./app.css";
 export async function loader({ request, context }: Route.LoaderArgs) {
   const env = context.cloudflare.env;
   const user = await getOptionalUser(request, env);
-  return { user, devLoginEnabled: env.DEV_LOGIN === "1" };
+  // og:url(canonical)組み立て用。クエリは含めない
+  const pathname = new URL(request.url).pathname;
+  return { user, devLoginEnabled: env.DEV_LOGIN === "1", pathname };
 }
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -38,14 +40,21 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <title>{SITE_NAME}</title>
-        {/* OGP / Twitter カード(画像は favicon から生成した public/ogp.png。og:image は絶対 URL 必須) */}
+        <meta name="description" content={SITE_TAGLINE} />
+        {/* OGP / Twitter カード(画像は favicon から生成した public/ogp.png — 生成: app/scripts/make-ogp.py。
+            og:image / og:url は絶対 URL 必須。MVP では title / description は全ページ共通固定とする割り切り。
+            per-page のカードが必要になったらここの静的タグを route の meta() へ移すこと(head 内で
+            <Meta /> より前に出るため、route 側で og: タグを返しても多くのクローラーはこちらを先勝ちで拾う) */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content={SITE_NAME} />
         <meta property="og:title" content={SITE_NAME} />
         <meta property="og:description" content={SITE_TAGLINE} />
+        <meta property="og:url" content={`${SITE_ORIGIN}${data?.pathname ?? "/"}`} />
         <meta property="og:image" content={`${SITE_ORIGIN}/ogp.png`} />
+        <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="ja_JP" />
         <meta name="twitter:card" content="summary_large_image" />
         <Meta />
         <Links />
