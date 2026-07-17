@@ -40,7 +40,8 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <title>{SITE_NAME}</title>
-        {/* description / OGP / Twitter カード(画像は favicon から生成した public/ogp.png — 生成: app/scripts/make-ogp.py。
+        {/* description / OGP / Twitter カード(public/ogp.png はデザイン済みバナー(1200×630)の完成アセット。
+            差し替え時は同サイズの PNG で上書きし、SNS 側キャッシュの再スクレイプが必要な点に注意。
             og:image / og:url は絶対 URL 必須。MVP では title / description は全ページ共通固定とする割り切り。
             per-page のカードが必要になったらこれらの静的タグを route の meta() へ移すこと(head 内で
             <Meta /> より前に出るため、route 側で同名タグを返しても多くのクローラーはこちらを先勝ちで拾う)。
