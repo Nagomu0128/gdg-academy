@@ -1,4 +1,4 @@
-# GDG Learning
+# GDG Academy
 
 HTML / CSS / JavaScript をゼロからステップアップで学べる Web 学習サービス。
 「解説スライド → アプリ内エディタで演習 → 提出して即時判定 → クリア」のループが核。
